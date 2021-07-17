@@ -1,0 +1,60 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model user {
+  id                   String    @id @default(uuid())
+  username             String    @unique
+  email                String    @unique
+  encrypted_password   String
+  bio                  String?
+  avatar_url           String?
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
+  recovery_sent_at     DateTime?
+  recovery_token       String?
+  last_sign_in_at      DateTime?
+  confirmation_sent_at DateTime?
+  confirmation_token   DateTime?
+  confirmed_at         DateTime?
+  rooms                room[]
+  rooms_created        room[]    @relation("roomCreator")
+}
+
+model room {
+  id         String   @id @default(uuid())
+  name       String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  creator    user     @relation("roomCreator", fields: [creator_id], references: [id])
+  creator_id String
+  users      user[]
+  polls      poll[]
+}
+
+model poll {
+  id       String   @id @default(uuid())
+  question String
+  room     room     @relation(fields: [room_id], references: [id])
+  room_id  String
+  options  option[]
+}
+
+model option {
+  id          String @id @default(uuid())
+  option_text String
+  poll        poll   @relation(fields: [poll_id], references: [id])
+  poll_id     String
+  votes       vote[]
+}
+
+model vote {
+  id        String @id @default(uuid())
+  option_id String
+  option    option @relation(fields: [option_id], references: [id])
+}
