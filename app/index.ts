@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import passport from 'passport';
 import session from 'express-session';
 import setUpPassportAuth from './config/passport';
+import cors from 'cors';
 
 dotenv.config();
 const PORT = process.env.PORT || 3000;
@@ -11,8 +12,17 @@ const PORT = process.env.PORT || 3000;
 const startServer = (): Express.Application => {
   const app: Express = express();
 
-  setUpPassportAuth(passport);
   app.use(helmet());
+  app.use(
+    cors({
+      origin:
+        process.env.NODE_ENV === 'development'
+          ? 'http://localhost:3000'
+          : process.env.CORS_ORIGIN,
+      credentials: true,
+    }),
+  );
+  setUpPassportAuth(passport);
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(
@@ -34,24 +44,41 @@ const startServer = (): Express.Application => {
   });
 
   app.get('/success', (req: Request, res: Response) => {
-    res.send('login successful');
+    res.json({ message: 'login successful' });
   });
 
   app.get('/failure', (req: Request, res: Response) => {
-    res.send('login failed');
+    res.json({ message: 'login failed' });
   });
 
   app.post(
-    '/login',
-    passport.authenticate('local'),
-    (req: Request, res: Response) => {
-      return res.send('hello');
-    },
+    '/auth/login',
+    passport.authenticate('local', {
+      successRedirect: '/success',
+      failureRedirect: '/failure',
+    }),
   );
 
-  app.get('/logout', (req: Request, res: Response) => {
+  app.get('/auth/logout', (req: Request, res: Response) => {
     req.logOut();
     res.send('logged out');
+  });
+
+  app.get('/auth/verify', (req: Request, res: Response) => {
+    if (req.user)
+      return res
+        .json({
+          message: 'You are authenticated',
+          isAuthenticated: true,
+          error: false,
+        })
+        .status(200);
+    else
+      return res.status(401).json({
+        message: 'You are not authenticated',
+        isAuthenticated: false,
+        error: false,
+      });
   });
 
   return app.listen(PORT, () =>
