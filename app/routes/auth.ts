@@ -32,6 +32,7 @@ router.post('/signup', async (req: Request, res: Response) => {
         email: email,
         encrypted_password: hash,
         username: username,
+        provider: 'EMAIL',
       },
     });
     return res.json({ error: false, message: 'User signed up successfully' });

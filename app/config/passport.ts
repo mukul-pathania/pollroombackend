@@ -3,8 +3,9 @@ import passportLocal from 'passport-local';
 import bcrypt from 'bcrypt';
 import prisma from '../prismaClient';
 
-const ERROR_MESSAGE = 'Incorrect username or password';
+const INCORRECT_USERNAME_PASSWORD = 'Incorrect username or password';
 const SUCCESS_MESSAGE = 'Login successful';
+const ERROR_MESSAGE = 'An error occured while processing your request';
 
 export default function SetUpPassportAuth(passport: PassportStatic): void {
   passport.use(
@@ -12,13 +13,18 @@ export default function SetUpPassportAuth(passport: PassportStatic): void {
       { usernameField: 'email', passReqToCallback: true },
       async (req, email, password, done) => {
         try {
-          const user = await prisma.user.findFirst({ where: { email: email } });
+          const user = await prisma.user.findFirst({
+            where: { email: email, provider: 'EMAIL' },
+          });
           let match;
           if (user)
-            match = await bcrypt.compare(password, user.encrypted_password);
+            match = await bcrypt.compare(
+              password,
+              user?.encrypted_password as string,
+            );
           if (!user || !match)
             return done(null, false, {
-              message: ERROR_MESSAGE,
+              message: INCORRECT_USERNAME_PASSWORD,
             });
           return done(null, user, { message: SUCCESS_MESSAGE });
         } catch (error) {
