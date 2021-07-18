@@ -39,7 +39,9 @@ const startServer = (): Express.Application => {
   app.use('/', routes);
 
   return app.listen(PORT, () =>
-    console.log(`Server running on ${PORT} in ${process.env.NODE_ENV} mode`),
+    console.log(
+      `Server running on port ${PORT} in ${process.env.NODE_ENV} mode`,
+    ),
   );
 };
 

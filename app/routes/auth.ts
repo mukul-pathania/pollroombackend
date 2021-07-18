@@ -80,4 +80,52 @@ router.get('/verify', (req: Request, res: Response) => {
     });
 });
 
+router.get(
+  '/google/signup',
+  passport.authenticate('googleSignup', {
+    scope: ['profile', 'email'],
+  }),
+);
+
+router.get('/google/signup/callback', (req: Request, res: Response) => {
+  passport.authenticate('googleSignup', {}, (err, user, message) => {
+    return res.json({ ...message });
+  })(req, res);
+});
+
+router.get(
+  '/google/login',
+  passport.authenticate('googleLogin', {
+    scope: ['profile', 'email'],
+  }),
+);
+
+router.get('/google/login/callback', (req: Request, res: Response) => {
+  passport.authenticate('googleLogin', {}, (err, user, message) => {
+    if (err || !user) {
+      return res.json({ ...message });
+    }
+    req.logIn(user, function (err) {
+      if (err) {
+        return res.json({ message: 'Failed to log you in' });
+      }
+      return res.json({ ...message });
+    });
+  })(req, res);
+});
+
+router.post('/login', (req: Request, res: Response) => {
+  passport.authenticate('local', function (err, user, message) {
+    if (err || !user) {
+      return res.json({ ...message });
+    }
+    req.logIn(user, function (err) {
+      if (err) {
+        return res.json({ message: 'Failed to log you in' });
+      }
+      return res.json({ ...message });
+    });
+  })(req, res);
+});
+
 export default router;
