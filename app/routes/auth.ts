@@ -47,11 +47,11 @@ router.post('/signup', async (req: Request, res: Response) => {
 router.post('/login', (req: Request, res: Response) => {
   passport.authenticate('local', function (err, user, message) {
     if (err || !user) {
-      return res.json({ ...message });
+      return res.json({ ...message, error: true });
     }
     req.logIn(user, function (err) {
       if (err) {
-        return res.json({ message: 'Failed to log you in' });
+        return res.json({ message: 'Failed to log you in', error: true });
       }
       return res.json({ ...message });
     });
