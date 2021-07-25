@@ -1,40 +1,25 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Request, Response } from 'express';
-import bcrypt from 'bcrypt';
-import prisma from '../prismaClient';
 import passport from 'passport';
+import UserService from '../services/UserService';
 
 const SignUpWithEmailPassword = async (req: Request, res: Response) => {
   try {
     const { username, email, password } = req.body;
+
     if (!username || !email || !password)
       return res.json({
         error: true,
         message: 'Please provide all three of username, email and password',
       });
-    const user = await prisma.user.findFirst({
-      where: { OR: [{ email: email }, { username: username }] },
-    });
-    if (user?.email === email)
-      return res.json({
-        error: true,
-        message: 'This email is already registered',
-      });
-    if (user?.username === username)
-      return res.json({
-        error: true,
-        message: 'This username is already taken',
-      });
-    const hash = await bcrypt.hash(password, 15);
-    await prisma.user.create({
-      data: {
-        email: email,
-        encrypted_password: hash,
-        username: username,
-        provider: 'EMAIL',
-      },
-    });
-    return res.json({ error: false, message: 'User signed up successfully' });
+
+    const response = await UserService.signUpWithEmailPassword(
+      username,
+      email,
+      password,
+    );
+
+    return res.json(response);
   } catch (error) {
     return res.json({
       error: true,
@@ -50,6 +35,7 @@ const loginWithEmailPassword = (req: Request, res: Response) => {
     }
     req.logIn(user, function (err) {
       if (err) {
+        console.log(err);
         return res.json({ message: 'Failed to log you in', error: true });
       }
       return res.json({ ...message });
