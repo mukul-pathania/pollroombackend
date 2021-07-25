@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import prisma from 'app/prismaClient';
+import prisma from '../prismaClient';
 import passport from 'passport';
 
-export const SignUpWithEmailPassword = async (req: Request, res: Response) => {
+const SignUpWithEmailPassword = async (req: Request, res: Response) => {
   try {
     const { username, email, password } = req.body;
     if (!username || !email || !password)
@@ -43,7 +43,7 @@ export const SignUpWithEmailPassword = async (req: Request, res: Response) => {
   }
 };
 
-export const loginWithEmailPassword = (req: Request, res: Response) => {
+const loginWithEmailPassword = (req: Request, res: Response) => {
   passport.authenticate('local', function (err, user, message) {
     if (err || !user) {
       return res.json({ ...message, error: true });
@@ -57,12 +57,12 @@ export const loginWithEmailPassword = (req: Request, res: Response) => {
   })(req, res);
 };
 
-export const logout = (req: Request, res: Response) => {
+const logout = (req: Request, res: Response) => {
   req.logOut();
   res.json({ message: 'Logged out successfully' });
 };
 
-export const verify = (req: Request, res: Response) => {
+const verify = (req: Request, res: Response) => {
   if (req.user)
     return res
       .json({
@@ -79,14 +79,23 @@ export const verify = (req: Request, res: Response) => {
     });
 };
 
-export const googleSignUpCallback = (req: Request, res: Response) => {
+const googleSignUpCallback = (req: Request, res: Response) => {
   passport.authenticate('googleSignup', {}, (err, user, message) => {
     return res.json({ ...message });
   })(req, res);
 };
 
-export const googleLoginCallback = (req: Request, res: Response) => {
+const googleLoginCallback = (req: Request, res: Response) => {
   passport.authenticate('googleSignup', {}, (err, user, message) => {
     return res.json({ ...message });
   })(req, res);
+};
+
+export default {
+  SignUpWithEmailPassword,
+  loginWithEmailPassword,
+  logout,
+  verify,
+  googleLoginCallback,
+  googleSignUpCallback,
 };
