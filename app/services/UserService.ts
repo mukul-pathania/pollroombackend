@@ -1,6 +1,7 @@
 import { user } from '@prisma/client';
 import prisma from '../prismaClient';
 import bcrypt from 'bcrypt';
+import EmailService from './EmailService';
 
 const signUpWithEmailPassword = async (
   username: string,
@@ -8,9 +9,9 @@ const signUpWithEmailPassword = async (
   password: string,
 ): Promise<{ error: boolean; message: string }> => {
   try {
-    if (username.length > 20 || email.length > 20 || password.length > 20)
+    if (username.length > 40 || email.length > 40 || password.length > 40)
       return {
-        message: 'No field should have length greater than 20',
+        message: 'No field should have length greater than 40',
         error: true,
       };
     if (username.length < 4)
@@ -28,7 +29,7 @@ const signUpWithEmailPassword = async (
     if (user?.username === username)
       return { error: true, message: 'This username is already taken' };
     const hash = await bcrypt.hash(password, 15);
-    await prisma.user.create({
+    const created_user = await prisma.user.create({
       data: {
         email: email,
         encrypted_password: hash,
@@ -36,6 +37,7 @@ const signUpWithEmailPassword = async (
         provider: 'EMAIL',
       },
     });
+    EmailService.sendSignUpEmail(created_user);
     return { error: false, message: 'User signed up successfully' };
   } catch (error) {
     return {
