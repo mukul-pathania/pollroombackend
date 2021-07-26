@@ -6,9 +6,10 @@ import session from 'express-session';
 import setUpPassportAuth from './config/passport';
 import cors from 'cors';
 import routes from './routes';
-
+import config from './config';
 dotenv.config();
-const PORT = process.env.PORT || 3000;
+
+const PORT = config.PORT || 3000;
 
 const startServer = (): Express.Application => {
   const app: Express = express();
@@ -17,9 +18,9 @@ const startServer = (): Express.Application => {
   app.use(
     cors({
       origin:
-        process.env.NODE_ENV === 'development'
+        config.NODE_ENV === 'development'
           ? 'http://localhost:3000'
-          : process.env.CORS_ORIGIN,
+          : config.CORS_ORIGIN,
       credentials: true,
     }),
   );
@@ -28,7 +29,7 @@ const startServer = (): Express.Application => {
   app.use(express.urlencoded({ extended: true }));
   app.use(
     session({
-      secret: process.env.SESSION_SECRET || '89yh4tqonds98aofawdmlk3',
+      secret: config.SESSION_SECRET,
       resave: false,
       saveUninitialized: false,
     }),
@@ -39,9 +40,7 @@ const startServer = (): Express.Application => {
   app.use('/', routes);
 
   return app.listen(PORT, () =>
-    console.log(
-      `Server running on port ${PORT} in ${process.env.NODE_ENV} mode`,
-    ),
+    console.log(`Server running on port ${PORT} in ${config.NODE_ENV} mode`),
   );
 };
 

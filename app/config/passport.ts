@@ -2,10 +2,11 @@ import { PassportStatic } from 'passport';
 import passportLocal from 'passport-local';
 import passportGoogle from 'passport-google-oauth20';
 import UserService from '../services/UserService';
+import config from './index';
 
 const ERROR_MESSAGE = 'An error occured while processing your request';
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID as string;
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET as string;
+const GOOGLE_CLIENT_ID = config.GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_SECRET = config.GOOGLE_SECRET_ID;
 
 export default function SetUpPassportAuth(passport: PassportStatic): void {
   passport.use(
