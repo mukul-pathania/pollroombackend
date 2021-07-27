@@ -18,7 +18,7 @@ export default function SetUpPassportAuth(passport: PassportStatic): void {
             email,
             password,
           );
-          return done(response.error, response.user, {
+          return done(null, response.user, {
             message: response.message,
           });
         } catch (error) {
