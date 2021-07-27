@@ -65,6 +65,20 @@ const verify = (req: Request, res: Response) => {
     });
 };
 
+const verifySignUpEmail = async (req: Request, res: Response) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.json({ message: 'No token provided', error: true });
+    const response = await UserService.verifySignUpEmail(token);
+    return res.json(response);
+  } catch (error) {
+    console.log(error);
+    return res.json({
+      message: 'An error occured while processing your request',
+    });
+  }
+};
+
 const googleSignUpCallback = (req: Request, res: Response) => {
   passport.authenticate('googleSignup', {}, (err, user, message) => {
     return res.json({ ...message });
@@ -82,6 +96,7 @@ export default {
   loginWithEmailPassword,
   logout,
   verify,
+  verifySignUpEmail,
   googleLoginCallback,
   googleSignUpCallback,
 };

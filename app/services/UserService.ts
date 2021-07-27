@@ -2,6 +2,7 @@ import { user } from '@prisma/client';
 import prisma from '../prismaClient';
 import bcrypt from 'bcrypt';
 import EmailService from './EmailService';
+import JWT from 'jsonwebtoken';
 
 const signUpWithEmailPassword = async (
   username: string,
@@ -64,7 +65,17 @@ const getUserForPassportLocalStrategy = async (
         message: 'Incorrect username or password',
         error: true,
       };
-    return { user: user, message: 'User logged in successfully', error: false };
+    if (!user.confirmed_at)
+      return {
+        message: 'Verify your email before logging in',
+        error: true,
+        user: false,
+      };
+    return {
+      user: user,
+      message: 'User logged in successfully',
+      error: false,
+    };
   } catch (error) {
     return {
       user: false,
@@ -139,10 +150,40 @@ const getUserById = async (id: string): Promise<user | null> => {
   return await prisma.user.findFirst({ where: { id: id } });
 };
 
+const verifySignUpEmail = async (
+  token: string,
+): Promise<{ message: string; error: boolean }> => {
+  try {
+    const { user_id } = JWT.decode(token) as { user_id: string };
+    const user = await prisma.user.findFirst({
+      where: { id: user_id, confirmation_token: token },
+    });
+    if (!user) return { message: 'Invalid token', error: true };
+    JWT.verify(token, user.encrypted_password as string);
+    await prisma.user.update({
+      where: {
+        id: user_id,
+      },
+      data: {
+        confirmation_token: null,
+        confirmed_at: new Date(),
+      },
+    });
+    return { message: 'Email verified successfully', error: false };
+  } catch (error) {
+    console.log(error);
+    return {
+      message: 'An error occured while processing your request',
+      error: true,
+    };
+  }
+};
+
 export default {
   signUpWithEmailPassword,
   getUserForPassportLocalStrategy,
   getUserForPassportGoogleSignUpStrategy,
   getUserForPassportGoogleLoginStrategy,
   getUserById,
+  verifySignUpEmail,
 };
