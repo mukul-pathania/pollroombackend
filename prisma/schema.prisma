@@ -25,7 +25,7 @@ model user {
   recovery_token       String?
   last_sign_in_at      DateTime? @db.Timestamptz
   confirmation_sent_at DateTime? @db.Timestamptz
-  confirmation_token   DateTime? @db.Timestamptz
+  confirmation_token   String?
   confirmed_at         DateTime? @db.Timestamptz
   created_at           DateTime  @default(now()) @db.Timestamptz
   updated_at           DateTime  @updatedAt @db.Timestamptz
