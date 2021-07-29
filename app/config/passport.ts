@@ -6,7 +6,7 @@ import config from './index';
 
 const ERROR_MESSAGE = 'An error occured while processing your request';
 const GOOGLE_CLIENT_ID = config.GOOGLE_CLIENT_ID;
-const GOOGLE_CLIENT_SECRET = config.GOOGLE_SECRET_ID;
+const GOOGLE_CLIENT_SECRET = config.GOOGLE_CLIENT_SECRET;
 
 export default function SetUpPassportAuth(passport: PassportStatic): void {
   passport.use(
