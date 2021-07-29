@@ -20,7 +20,7 @@ const signUpWithEmailPassword = async (
         error: true,
         message: 'Username must contain atleast 4 characters',
       };
-    if (password.length < 4)
+    if (password.length < 6)
       return { error: true, message: 'Password must be atleast 6 characters' };
     const user = await prisma.user.findFirst({
       where: { OR: [{ email: email }, { username: username }] },
@@ -58,7 +58,10 @@ const getUserForPassportLocalStrategy = async (
     });
     let match;
     if (user)
-      match = bcrypt.compare(password, user?.encrypted_password as string);
+      match = await bcrypt.compare(
+        password,
+        user?.encrypted_password as string,
+      );
     if (!match || !user)
       return {
         user: false,
@@ -179,6 +182,64 @@ const verifySignUpEmail = async (
   }
 };
 
+const sendResetPasswordMail = async (
+  email: string,
+): Promise<{ message: string; error: boolean }> => {
+  try {
+    const user = await prisma.user.findFirst({
+      where: { email: email, provider: 'EMAIL', NOT: [{ confirmed_at: null }] },
+    });
+    // Even if we don't find the user, don't tell that the user doesn't exist
+    if (!user)
+      return {
+        message: 'Check your email for further instructions',
+        error: false,
+      };
+    await EmailService.sendPasswordResetEmail(user);
+    return {
+      message: 'Check your email for further instructions',
+      error: false,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      message: 'An error occured while processing your request',
+      error: true,
+    };
+  }
+};
+
+const resetPassword = async (
+  token: string,
+  password: string,
+): Promise<{ message: string; error: boolean }> => {
+  try {
+    const { user_id } = JWT.decode(token) as { user_id: string };
+    const user = await prisma.user.findFirst({
+      where: { id: user_id, recovery_token: token },
+    });
+    if (!user) return { message: 'Invalid token', error: true };
+    JWT.verify(token, user.encrypted_password as string);
+    const hashed = await bcrypt.hash(password, 15);
+    await prisma.user.update({
+      where: {
+        id: user_id,
+      },
+      data: {
+        recovery_token: null,
+        encrypted_password: hashed,
+      },
+    });
+    return { message: 'Password reset successfully', error: false };
+  } catch (error) {
+    console.log(error);
+    return {
+      message: 'An error occured while processing your request',
+      error: true,
+    };
+  }
+};
+
 export default {
   signUpWithEmailPassword,
   getUserForPassportLocalStrategy,
@@ -186,4 +247,6 @@ export default {
   getUserForPassportGoogleLoginStrategy,
   getUserById,
   verifySignUpEmail,
+  sendResetPasswordMail,
+  resetPassword,
 };

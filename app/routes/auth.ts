@@ -14,6 +14,10 @@ router.get('/verify', authControllers.verify);
 
 router.post('/email/verify', authControllers.verifySignUpEmail);
 
+router.post('/password/reset/email', authControllers.sendPasswordResetEmail);
+
+router.post('/password/reset/change', authControllers.resetPassword);
+
 router.get(
   '/google/signup',
   passport.authenticate('googleSignup', {
