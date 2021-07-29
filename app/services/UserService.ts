@@ -54,8 +54,17 @@ const getUserForPassportLocalStrategy = async (
 ): Promise<{ user: user | false; message: string; error: boolean }> => {
   try {
     const user = await prisma.user.findFirst({
-      where: { email: email, provider: 'EMAIL' },
+      where: { email: email },
     });
+    if (user && user.provider !== 'EMAIL') {
+      return {
+        message: `Your account was registered using ${
+          user.provider === 'GOOGLE' ? 'Google' : 'Github'
+        }`,
+        error: true,
+        user: false,
+      };
+    }
     let match;
     if (user)
       match = await bcrypt.compare(
