@@ -132,7 +132,7 @@ const getUserForPassportGoogleLoginStrategy = async (
       return {
         user: undefined,
         message:
-          'Your google account is not connected with your PollRoom account, try signing in with email instead',
+          'Your google account is not connected with your PollRoom account',
         error: true,
       };
     return {

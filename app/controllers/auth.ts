@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 import passport from 'passport';
 import UserService from '../services/UserService';
+import config from '../config';
 
 const SignUpWithEmailPassword = async (req: Request, res: Response) => {
   try {
@@ -121,13 +122,40 @@ const resetPassword = async (req: Request, res: Response) => {
 
 const googleSignUpCallback = (req: Request, res: Response) => {
   passport.authenticate('googleSignup', {}, (err, user, message) => {
-    return res.json({ ...message });
+    if (err || !user) {
+      const encodedMessage = encodeURIComponent(message.message);
+      return res.redirect(
+        `${config.CLIENT_URL}/auth/google/callback/signup/failed#message=${encodedMessage}`,
+      );
+    }
+    const encodedMessage = encodeURIComponent(message.message);
+    return res.redirect(
+      `${config.CLIENT_URL}/auth/google/callback/signup/success#message=${encodedMessage}`,
+    );
   })(req, res);
 };
 
 const googleLoginCallback = (req: Request, res: Response) => {
-  passport.authenticate('googleSignup', {}, (err, user, message) => {
-    return res.json({ ...message });
+  passport.authenticate('googleLogin', {}, (err, user, message) => {
+    if (err || !user) {
+      const encodedMessage = encodeURIComponent(message.message);
+      return res.redirect(
+        `${config.CLIENT_URL}/auth/google/callback/login/failed#message=${encodedMessage}`,
+      );
+    }
+    req.logIn(user, function (err) {
+      if (err) {
+        const encodedMessage = encodeURIComponent(
+          '#message=Failed to log you in',
+        );
+        return res.redirect(
+          `${config.CLIENT_URL}/auth/google/callback/login/failed#${encodedMessage}`,
+        );
+      }
+      return res.redirect(
+        `${config.CLIENT_URL}/auth/google/callback/login/success`,
+      );
+    });
   })(req, res);
 };
 
