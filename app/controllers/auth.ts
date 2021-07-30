@@ -55,6 +55,8 @@ const verify = (req: Request, res: Response) => {
       .json({
         message: 'You are authenticated',
         isAuthenticated: true,
+        username: req.user.username,
+        email: req.user.email,
         error: false,
       })
       .status(200);
