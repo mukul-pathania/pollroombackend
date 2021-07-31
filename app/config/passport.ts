@@ -1,7 +1,7 @@
 import { PassportStatic } from 'passport';
 import passportLocal from 'passport-local';
 import passportGoogle from 'passport-google-oauth20';
-import UserService from '../services/UserService';
+import UserService from '../services/UserService/index';
 import config from './index';
 
 const ERROR_MESSAGE = 'An error occured while processing your request';
@@ -14,10 +14,11 @@ export default function SetUpPassportAuth(passport: PassportStatic): void {
       { usernameField: 'email', passReqToCallback: true },
       async (req, email, password, done) => {
         try {
-          const response = await UserService.getUserForPassportLocalStrategy(
-            email,
-            password,
-          );
+          const response =
+            await UserService.auth.getUserForPassportLocalStrategy(
+              email,
+              password,
+            );
           return done(null, response.user, {
             message: response.message,
           });
@@ -42,7 +43,7 @@ export default function SetUpPassportAuth(passport: PassportStatic): void {
       async (req, accessToken, refreshToken, profile, done) => {
         try {
           const response =
-            await UserService.getUserForPassportGoogleSignUpStrategy(
+            await UserService.auth.getUserForPassportGoogleSignUpStrategy(
               profile.emails?.[0].value as string,
               `${profile.displayName}${profile.id}`,
             );
@@ -72,7 +73,7 @@ export default function SetUpPassportAuth(passport: PassportStatic): void {
       async (req, accessToken, refreshToken, profile, done) => {
         try {
           const response =
-            await UserService.getUserForPassportGoogleLoginStrategy(
+            await UserService.auth.getUserForPassportGoogleLoginStrategy(
               profile.emails?.[0].value as string,
             );
           return done(null, response.user, {
@@ -80,6 +81,7 @@ export default function SetUpPassportAuth(passport: PassportStatic): void {
             error: response.error,
           });
         } catch (error) {
+          console.log(error);
           return done(null, undefined, {
             message: 'An error occured while processing your request',
             error: true,
@@ -95,7 +97,7 @@ export default function SetUpPassportAuth(passport: PassportStatic): void {
 
   passport.deserializeUser(async (id, done) => {
     try {
-      const user = await UserService.getUserById(id as string);
+      const user = await UserService.auth.getUserById(id as string);
       if (user) return done(false, user);
       return done(false, null);
     } catch (error) {

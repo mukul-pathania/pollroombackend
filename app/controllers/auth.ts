@@ -14,7 +14,7 @@ const SignUpWithEmailPassword = async (req: Request, res: Response) => {
         message: 'Please provide all three of username, email and password',
       });
 
-    const response = await UserService.signUpWithEmailPassword(
+    const response = await UserService.auth.signUpWithEmailPassword(
       username,
       email,
       password,
@@ -72,7 +72,7 @@ const verifySignUpEmail = async (req: Request, res: Response) => {
   try {
     const { token } = req.body;
     if (!token) return res.json({ message: 'No token provided', error: true });
-    const response = await UserService.verifySignUpEmail(token);
+    const response = await UserService.auth.verifySignUpEmail(token);
     return res.json(response);
   } catch (error) {
     console.log(error);
@@ -87,7 +87,7 @@ const sendPasswordResetEmail = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
     if (!email) return res.json({ message: 'No email provided', error: true });
-    const response = await UserService.sendResetPasswordMail(email);
+    const response = await UserService.auth.sendResetPasswordMail(email);
     return res.json({ message: response.message, error: response.error });
   } catch (error) {
     console.log(error);
@@ -111,7 +111,7 @@ const resetPassword = async (req: Request, res: Response) => {
         message: 'Password should have length of atleast 6',
         error: true,
       });
-    const response = await UserService.resetPassword(token, password);
+    const response = await UserService.auth.resetPassword(token, password);
     return res.json(response);
   } catch (error) {
     console.log(error);

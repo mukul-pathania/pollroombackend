@@ -1,7 +1,7 @@
 import { user } from '@prisma/client';
-import prisma from '../prismaClient';
+import prisma from '../../prismaClient';
 import bcrypt from 'bcrypt';
-import EmailService from './EmailService';
+import EmailService from '../EmailService';
 import JWT from 'jsonwebtoken';
 
 const signUpWithEmailPassword = async (
