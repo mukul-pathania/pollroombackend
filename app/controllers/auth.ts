@@ -22,6 +22,7 @@ const SignUpWithEmailPassword = async (req: Request, res: Response) => {
 
     return res.json(response);
   } catch (error) {
+    console.log(error);
     return res.json({
       error: true,
       message: 'An error occured while processing your request',

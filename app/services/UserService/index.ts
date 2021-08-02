@@ -1,2 +1,3 @@
 import auth from './auth';
-export default { auth };
+import profile from './profile';
+export default { auth, profile };
