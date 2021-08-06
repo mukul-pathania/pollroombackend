@@ -22,4 +22,21 @@ const createRoom = async (req: Request, res: Response) => {
   }
 };
 
-export default { createRoom };
+const getRoomInfo = async (req: Request, res: Response) => {
+  try {
+    const { id: roomId } = req.params;
+    if (!roomId) return res.json({ message: 'Provide a room id', error: true });
+    const response = await PollRoomService.getRoomInfo(
+      req.user?.id as string,
+      roomId,
+    );
+    return res.json(response);
+  } catch (error) {
+    return res.json({
+      message: 'An error occured while processing your request',
+      error: true,
+    });
+  }
+};
+
+export default { createRoom, getRoomInfo };

@@ -6,5 +6,6 @@ const router = Router();
 
 router.use(auth.authCheckMiddleware);
 router.post('/new', roomControllers.createRoom);
+router.get('/:id', roomControllers.getRoomInfo);
 
 export default router;
