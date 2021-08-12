@@ -33,10 +33,11 @@ const createRoom = async (
 };
 
 type roomInfo = {
-  created_at: Date;
   name: string;
+  created_at: Date;
   creator: {
     username: string;
+    id: string;
   };
   polls: {
     id: string;
@@ -46,61 +47,79 @@ type roomInfo = {
       id: string;
       created_at: Date;
       option_text: string;
-      isSelected?: boolean;
-      votes: {
-        id: string;
-        option_id: string;
-        created_at: Date;
-        user_id: string;
-      }[];
+      _count: {
+        votes: number;
+      } | null;
     }[];
   }[];
 } | null;
 
+type votesByUser =
+  | {
+      option: {
+        poll_id: string;
+      };
+      option_id: string;
+    }[]
+  | null;
+
 const getRoomInfo = async (
   userId: string,
   roomId: string,
-): Promise<{ message: string; roomInfo: roomInfo; error: boolean }> => {
+): Promise<{
+  message: string;
+  roomInfo: roomInfo;
+  votesByUser: votesByUser;
+  error: boolean;
+}> => {
   try {
     const roomInfo = await prisma.room.findFirst({
       where: { id: roomId },
       select: {
-        creator: { select: { username: true } },
+        creator: { select: { username: true, id: true } },
         created_at: true,
         name: true,
         polls: {
+          orderBy: [{ created_at: 'asc' }],
           select: {
             id: true,
             question: true,
             created_at: true,
             options: {
+              orderBy: [{ created_at: 'asc' }],
               select: {
                 id: true,
                 option_text: true,
                 created_at: true,
-                votes: {
-                  select: {
-                    id: true,
-                    option_id: true,
-                    user_id: true,
-                    created_at: true,
-                  },
-                },
+                _count: { select: { votes: true } },
               },
             },
           },
         },
       },
     });
+    const votesByUser = await prisma.vote.findMany({
+      where: {
+        option: { poll: { room_id: roomId } },
+        user_id: userId,
+      },
+      select: { option_id: true, option: { select: { poll_id: true } } },
+    });
     if (!roomInfo)
-      return { message: 'No such room exists', error: true, roomInfo: null };
-    return { message: 'Success', error: false, roomInfo };
+      return {
+        message: 'No such room exists',
+        error: true,
+        roomInfo: null,
+        votesByUser: null,
+      };
+    return { message: 'Success', error: false, roomInfo, votesByUser };
   } catch (error) {
     console.log(error);
     return {
       message: 'An error occured while processing your request',
       error: true,
       roomInfo: null,
+      votesByUser: null,
     };
   }
 };
