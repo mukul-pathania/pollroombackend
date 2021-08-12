@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Request, Response } from 'express';
 import passport from 'passport';
-import UserService from '../services/UserService';
+import UserService from '../services/UserService/index';
 import config from '../config';
 
 const SignUpWithEmailPassword = async (req: Request, res: Response) => {

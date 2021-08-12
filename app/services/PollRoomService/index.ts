@@ -33,35 +33,28 @@ const createRoom = async (
 };
 
 type roomInfo = {
-  name: string;
-  created_at: Date;
   creator: {
+    id: string;
     username: string;
-    id: string;
   };
+  created_at: Date;
+  name: string;
   polls: {
-    id: string;
     created_at: Date;
+    id: string;
     question: string;
     options: {
-      id: string;
       created_at: Date;
+      id: string;
       option_text: string;
-      _count: {
-        votes: number;
-      } | null;
+      _count: { votes: number } | null;
+      votes:
+        | {
+            id: string;
+          }[];
     }[];
   }[];
 } | null;
-
-type votesByUser =
-  | {
-      option: {
-        poll_id: string;
-      };
-      option_id: string;
-    }[]
-  | null;
 
 const getRoomInfo = async (
   userId: string,
@@ -69,7 +62,6 @@ const getRoomInfo = async (
 ): Promise<{
   message: string;
   roomInfo: roomInfo;
-  votesByUser: votesByUser;
   error: boolean;
 }> => {
   try {
@@ -92,34 +84,26 @@ const getRoomInfo = async (
                 option_text: true,
                 created_at: true,
                 _count: { select: { votes: true } },
+                votes: { where: { user_id: userId }, select: { id: true } },
               },
             },
           },
         },
       },
     });
-    const votesByUser = await prisma.vote.findMany({
-      where: {
-        option: { poll: { room_id: roomId } },
-        user_id: userId,
-      },
-      select: { option_id: true, option: { select: { poll_id: true } } },
-    });
     if (!roomInfo)
       return {
         message: 'No such room exists',
         error: true,
         roomInfo: null,
-        votesByUser: null,
       };
-    return { message: 'Success', error: false, roomInfo, votesByUser };
+    return { message: 'Success', error: false, roomInfo };
   } catch (error) {
     console.log(error);
     return {
       message: 'An error occured while processing your request',
       error: true,
       roomInfo: null,
-      votesByUser: null,
     };
   }
 };
