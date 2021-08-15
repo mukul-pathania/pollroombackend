@@ -1,4 +1,4 @@
-import { user } from '@prisma/client';
+import { user, Prisma } from '@prisma/client';
 import prisma from '../../prismaClient';
 
 const createRoom = async (
@@ -65,6 +65,28 @@ const getRoomInfo = async (
   error: boolean;
 }> => {
   try {
+    const isUserInRoomOrAdmin = await prisma.user.findFirst({
+      where: {
+        id: userId,
+        OR: [
+          { rooms: { some: { id: { equals: roomId } } } },
+          {
+            rooms_created: {
+              some: {
+                id: { equals: roomId },
+              },
+            },
+          },
+        ],
+      },
+      select: { id: true },
+    });
+    if (!isUserInRoomOrAdmin)
+      return {
+        message: 'You might not have joined the room, or no such room exists',
+        roomInfo: null,
+        error: true,
+      };
     const roomInfo = await prisma.room.findFirst({
       where: { id: roomId },
       select: {
@@ -108,4 +130,32 @@ const getRoomInfo = async (
   }
 };
 
-export default { createRoom, getRoomInfo };
+const joinRoom = async (
+  userId: string,
+  roomName: string,
+): Promise<{ message: string; error: boolean; roomId?: string }> => {
+  try {
+    const room = await prisma.room.update({
+      where: { name: roomName },
+      data: {
+        users: {
+          connect: {
+            id: userId,
+          },
+        },
+      },
+    });
+    return { message: 'Success', error: false, roomId: room.id };
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2016')
+        return { message: 'No such room exists', error: true };
+    }
+    return {
+      message: 'An error occured while processing your request',
+      error: true,
+    };
+  }
+};
+
+export default { createRoom, getRoomInfo, joinRoom };
