@@ -1,4 +1,4 @@
-import { user } from '@prisma/client';
+import { user, Prisma } from '@prisma/client';
 import prisma from '../../prismaClient';
 import bcrypt from 'bcrypt';
 import EmailService from '../EmailService';
@@ -22,13 +22,6 @@ const signUpWithEmailPassword = async (
       };
     if (password.length < 6)
       return { error: true, message: 'Password must be atleast 6 characters' };
-    const user = await prisma.user.findFirst({
-      where: { OR: [{ email: email }, { username: username }] },
-    });
-    if (user?.email === email)
-      return { error: true, message: 'This email is already registered' };
-    if (user?.username === username)
-      return { error: true, message: 'This username is already taken' };
     const hash = await bcrypt.hash(password, 15);
     const created_user = await prisma.user.create({
       data: {
@@ -41,6 +34,16 @@ const signUpWithEmailPassword = async (
     EmailService.sendSignUpEmail(created_user);
     return { error: false, message: 'User signed up successfully' };
   } catch (error) {
+    console.log(error);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        const message = (error.meta as { target: Array<string> }).target[0];
+        return {
+          message: `This ${message} is already registered`,
+          error: true,
+        };
+      }
+    }
     return {
       error: true,
       message: 'An error occured while processing your request',
@@ -102,13 +105,6 @@ const getUserForPassportGoogleSignUpStrategy = async (
   username: string,
 ): Promise<{ user: user | undefined; message: string; error: boolean }> => {
   try {
-    const user = await prisma.user.findFirst({ where: { email: email } });
-    if (user)
-      return {
-        user: undefined,
-        message: 'This email is already registered',
-        error: true,
-      };
     const createdUser = await prisma.user.create({
       data: {
         username: username,
@@ -122,6 +118,15 @@ const getUserForPassportGoogleSignUpStrategy = async (
       error: false,
     };
   } catch (error) {
+    console.log(error);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002')
+        return {
+          message: 'This email is already registered',
+          error: true,
+          user: undefined,
+        };
+    }
     return {
       user: undefined,
       message: 'An error occured while processing your request',
