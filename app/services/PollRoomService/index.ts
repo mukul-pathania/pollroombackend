@@ -1,5 +1,7 @@
 import { user, Prisma } from '@prisma/client';
 import prisma from '../../prismaClient';
+import JWT from 'jsonwebtoken';
+import config from '../../config';
 
 const createRoom = async (
   user: user,
@@ -66,6 +68,7 @@ const getRoomInfo = async (
   message: string;
   roomInfo: roomInfo;
   error: boolean;
+  socketToken: string;
 }> => {
   try {
     const isUserInRoomOrAdmin = await prisma.user.findFirst({
@@ -82,12 +85,13 @@ const getRoomInfo = async (
           },
         ],
       },
-      select: { id: true },
+      select: { id: true, encrypted_password: true },
     });
     if (!isUserInRoomOrAdmin)
       return {
         message: 'You might not have joined the room, or no such room exists',
         roomInfo: null,
+        socketToken: '',
         error: true,
       };
     const roomInfo = await prisma.room.findFirst({
@@ -120,14 +124,19 @@ const getRoomInfo = async (
       return {
         message: 'No such room exists',
         error: true,
+        socketToken: '',
         roomInfo: null,
       };
-    return { message: 'Success', error: false, roomInfo };
+    const token = JWT.sign({ room_id: roomId }, config.SOCKET_TOKEN_SECRET, {
+      expiresIn: '30m',
+    });
+    return { message: 'Success', error: false, roomInfo, socketToken: token };
   } catch (error) {
     console.log(error);
     return {
       message: 'An error occured while processing your request',
       error: true,
+      socketToken: '',
       roomInfo: null,
     };
   }

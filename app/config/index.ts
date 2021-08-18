@@ -1,5 +1,5 @@
 export default {
-  CORS_ORIGIN: process.env.CORS_ORIGIN,
+  CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:3000/',
   SESSION_SECRET:
     process.env.SESSION_SECRET ||
     'dsoheihisuy098njoietrwa9890er98u4qklnfdas08j0',
@@ -10,4 +10,6 @@ export default {
   EMAIL_USER: process.env.EMAIL_USER as string,
   EMAIL_PASSWORD: process.env.EMAIL_PASSWORD as string,
   CLIENT_URL: process.env.CLIENT_URL,
+  SOCKET_TOKEN_SECRET:
+    process.env.SOCKET_TOKEN_SECRET || 'ljkhsaduhntolika89yvsdnlke480',
 };

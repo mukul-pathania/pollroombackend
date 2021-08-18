@@ -17,15 +17,18 @@ const PORT = config.PORT || 3000;
 const startServer = (): void => {
   const app: Express = express();
   const httpServer = createServer(app);
-  const io = new Server(httpServer);
+  const io = new Server(httpServer, {
+    cors: {
+      origin: config.CORS_ORIGIN,
+      methods: ['GET', 'POST'],
+      credentials: true,
+    },
+  });
 
   app.use(helmet());
   app.use(
     cors({
-      origin:
-        config.NODE_ENV === 'development'
-          ? 'http://localhost:3000'
-          : config.CORS_ORIGIN,
+      origin: config.CORS_ORIGIN,
       credentials: true,
     }),
   );

@@ -30,7 +30,6 @@ const dashBoardInfo = async (
         },
       },
     });
-    console.log(user);
     const pollsCreated = user?.rooms_created.reduce((result, item) => {
       return result + item.polls.length;
     }, 0);
