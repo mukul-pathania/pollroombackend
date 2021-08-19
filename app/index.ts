@@ -38,13 +38,15 @@ const startServer = (): HTTPServer => {
   );
 
   setUpPassportAuth(passport);
-  app.use(
-    expressWinston.logger({
-      meta: false,
-      transports: [new winston.transports.Console()],
-      expressFormat: true,
-    }),
-  );
+  if (config.NODE_ENV != 'test') {
+    app.use(
+      expressWinston.logger({
+        meta: false,
+        transports: [new winston.transports.Console()],
+        expressFormat: true,
+      }),
+    );
+  }
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
