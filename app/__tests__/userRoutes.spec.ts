@@ -2,7 +2,6 @@ import axios, { AxiosInstance } from 'axios';
 import { Server } from 'http';
 import nock from 'nock';
 import { startServer } from '..';
-
 // startServer will use this config, just change the port
 jest.mock('../config', () => ({
   ...jest.requireActual('../config').default,
@@ -23,10 +22,7 @@ beforeAll((done) => {
 });
 
 afterAll((done) => {
-  // ️️️✅ Best Practice: Clean-up resources after each run
   server.close();
-
-  // ️️️✅ Best Practice: Clean-up all nocks before the next file starts
   nock.enableNetConnect();
   done();
 });
@@ -36,6 +32,10 @@ describe('User routes', () => {
     test('The dashboard is a protected route', async () => {
       const dashboardInfo = await axiosAPIClient('/user/dashboard');
       expect(dashboardInfo.status).toBe(401);
+      expect(dashboardInfo.data).toStrictEqual({
+        error: true,
+        message: 'This endpoint requires authentication',
+      });
     });
   });
 });

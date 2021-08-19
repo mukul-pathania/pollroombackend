@@ -2,12 +2,20 @@
 const isPortReachable = require('is-port-reachable');
 const path = require('path');
 const dockerCompose = require('docker-compose');
-// const npm = require('npm');
-// const util = require('util');
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
+
+async function dbMigrateTest() {
+  try {
+    await exec('yarn db:migrate:test');
+  } catch (error) {
+    console.log('prisma migration failed', error);
+    process.exit(1);
+  }
+}
 
 module.exports = async () => {
   console.time('global-setup');
-
   // ️️️✅ Best Practice: Speed up during development, if already live then do nothing
   const isDBReachable = await isPortReachable(54320);
   if (!isDBReachable) {
@@ -24,14 +32,7 @@ module.exports = async () => {
         cwd: path.join(__dirname),
       },
     );
-
-    // ️️️✅ Best Practice: Use npm script for data seeding and migrations
-    // const npmLoadAsPromise = util.promisify(npm.load);
-    // await npmLoadAsPromise();
-    // const npmCommandAsPromise = util.promisify(npm.commands.run);
-    // await npmCommandAsPromise(['db:migrate']);
-    // ✅ Best Practice: Seed only metadata and not test record, read "Dealing with data" section for further information
-    // await npmCommandAsPromise(['db:seed']);
+    await dbMigrateTest();
   }
 
   // 👍🏼 We're ready

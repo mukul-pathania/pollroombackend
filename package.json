@@ -13,7 +13,10 @@
     "dev": "cross-env NODE_ENV=development concurrently \"tsc --watch\" \"nodemon -q dist/index.js\"",
     "prestart": "yarn run build",
     "start": "cross-env NODE_ENV=production node dist/index.js",
-    "test": "jest"
+    "test": "dotenv -e .env.test -- jest",
+    "test:dev": "dotenv -e .env.test -- jest --watch --silent --runInBand --verbose",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:test": "dotenv -e .env.test -- yarn prisma migrate dev"
   },
   "dependencies": {
     "@prisma/client": "2.27.0",
@@ -52,6 +55,7 @@
     "axios": "^0.21.1",
     "concurrently": "^6.2.0",
     "docker-compose": "^0.23.13",
+    "dotenv-cli": "^4.0.0",
     "eslint": "^7.30.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
@@ -60,7 +64,7 @@
     "nock": "^13.1.1",
     "nodemon": "^2.0.12",
     "prettier": "^2.3.2",
-    "prisma": "2.27.0",
+    "prisma": "^2.29.1",
     "ts-jest": "^27.0.5",
     "ts-node": "^10.2.0"
   },
