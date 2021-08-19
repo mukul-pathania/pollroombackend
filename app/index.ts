@@ -1,4 +1,4 @@
-import { createServer } from 'http';
+import { createServer, Server as HTTPServer } from 'http';
 import express, { Express } from 'express';
 import { Server } from 'socket.io';
 import helmet from 'helmet';
@@ -10,11 +10,12 @@ import cors from 'cors';
 import routes from './routes';
 import config from './config';
 import registerSocketEventHandlers from './config/socketio';
+
 dotenv.config();
 
 const PORT = config.PORT || 3000;
 
-const startServer = (): void => {
+const startServer = (): HTTPServer => {
   const app: Express = express();
   const httpServer = createServer(app);
   const io = new Server(httpServer, {
@@ -51,7 +52,7 @@ const startServer = (): void => {
 
   app.use('/', routes);
 
-  httpServer.listen(PORT, () => {
+  return httpServer.listen(PORT, () => {
     console.log(`Server running on port ${PORT} in ${config.NODE_ENV} mode`);
   });
 };
