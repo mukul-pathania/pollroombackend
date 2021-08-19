@@ -1,6 +1,7 @@
 import { Server, Socket } from 'socket.io';
 import JWT from 'jsonwebtoken';
 import config from '.';
+import logger from '../util/logger';
 
 const registerSocketEventHandlers = (io: Server): void => {
   io.use((socket, next) => {
@@ -8,16 +9,16 @@ const registerSocketEventHandlers = (io: Server): void => {
     try {
       JWT.verify(token, config.SOCKET_TOKEN_SECRET);
     } catch (error) {
-      console.log('Socket connection failure: ', error.message);
+      logger.log('error', 'Socket connection failure: %O', error);
       const err = new Error('Invalid token');
       return next(err);
     }
     next();
   });
   io.on('connection', (socket: Socket) => {
-    console.log('emitting message');
+    logger.silly('emitting message');
     socket.on('disconnect', (reason) => {
-      console.log(`socket ${socket.id} disconnected due to reason ${reason}`);
+      logger.info(`socket ${socket.id} disconnected due to reason ${reason}`);
     });
     socket.emit('message', 'hello');
   });

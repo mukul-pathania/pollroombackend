@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 import { user } from '@prisma/client';
 import PollRoomService from '../services/PollRoomService/index';
+import logger from '../util/logger';
 
 const createRoom = async (req: Request, res: Response) => {
   try {
@@ -14,7 +15,7 @@ const createRoom = async (req: Request, res: Response) => {
     const response = await PollRoomService.createRoom(user as user, roomName);
     return res.json(response);
   } catch (error) {
-    console.log(error);
+    logger.log('error', 'roomcontroller:createroom %O', error);
     return res.json({
       message: 'An error occured while processing your request',
       error: true,
@@ -32,6 +33,7 @@ const getRoomInfo = async (req: Request, res: Response) => {
     );
     return res.json(response);
   } catch (error) {
+    logger.log('error', 'roomcontroller:getroominfo %O', error);
     return res.json({
       message: 'An error occured while processing your request',
       error: true,

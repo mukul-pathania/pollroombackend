@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import passport from 'passport';
 import UserService from '../services/UserService/index';
 import config from '../config';
+import logger from '../util/logger';
 
 const SignUpWithEmailPassword = async (req: Request, res: Response) => {
   try {
@@ -22,7 +23,7 @@ const SignUpWithEmailPassword = async (req: Request, res: Response) => {
 
     return res.json(response);
   } catch (error) {
-    console.log(error);
+    logger.log('error', 'userservice:signupwithemailpassword  %O', error);
     return res.json({
       error: true,
       message: 'An error occured while processing your request',
@@ -37,7 +38,7 @@ const loginWithEmailPassword = (req: Request, res: Response) => {
     }
     req.logIn(user, function (err) {
       if (err) {
-        console.log(err);
+        logger.log('error', 'userservice:loginwithemailpassword %O', err);
         return res.json({ message: 'Failed to log you in', error: true });
       }
       return res.json({ ...message });
@@ -76,7 +77,7 @@ const verifySignUpEmail = async (req: Request, res: Response) => {
     const response = await UserService.auth.verifySignUpEmail(token);
     return res.json(response);
   } catch (error) {
-    console.log(error);
+    logger.log('error', 'userservice:verifysignupemail  %O', error);
     return res.json({
       message: 'An error occured while processing your request',
       error: true,
@@ -91,7 +92,7 @@ const sendPasswordResetEmail = async (req: Request, res: Response) => {
     const response = await UserService.auth.sendResetPasswordMail(email);
     return res.json({ message: response.message, error: response.error });
   } catch (error) {
-    console.log(error);
+    logger.log('error', 'userservice:sendpasswordresetemail  %O', error);
     return res.json({
       message: 'An error occured while processing your request',
       error: true,
@@ -115,7 +116,7 @@ const resetPassword = async (req: Request, res: Response) => {
     const response = await UserService.auth.resetPassword(token, password);
     return res.json(response);
   } catch (error) {
-    console.log(error);
+    logger.log('error', 'userservice:resetpassword %O', error);
     return res.json({
       message: 'An error occured while processing your request',
       error: true,

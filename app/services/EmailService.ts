@@ -3,6 +3,7 @@ import nodemailer from 'nodemailer';
 import JWT from 'jsonwebtoken';
 import config from '../config';
 import prisma from '../prismaClient';
+import logger from '../util/logger';
 
 const Transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
@@ -38,9 +39,9 @@ const sendPasswordResetEmail = async (user: user): Promise<void> => {
       subject: 'Reset your password',
       html: HTML,
     });
-    console.log(info);
+    logger.log('info', 'emailservice:sendresetpasswordemail %O', info);
   } catch (error) {
-    console.log(error);
+    logger.log('error', 'emailservice:sendresetpasswordemail %O', error);
   }
 };
 
@@ -68,9 +69,9 @@ const sendSignUpEmail = async (user: user): Promise<void> => {
       subject: 'Confirm your email for PollRoom sign up',
       html: HTML,
     });
-    console.log(info);
+    logger.log('info', 'emailservice:sendsignupemail %O', info);
   } catch (error) {
-    console.log(error);
+    logger.log('error', 'emailservice:sendsignupemail %O', error);
   }
 };
 

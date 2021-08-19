@@ -3,6 +3,7 @@ import prisma from '../../prismaClient';
 import bcrypt from 'bcrypt';
 import EmailService from '../EmailService';
 import JWT from 'jsonwebtoken';
+import logger from '../../util/logger';
 
 const signUpWithEmailPassword = async (
   username: string,
@@ -34,7 +35,7 @@ const signUpWithEmailPassword = async (
     EmailService.sendSignUpEmail(created_user);
     return { error: false, message: 'User signed up successfully' };
   } catch (error) {
-    console.log(error);
+    logger.log('error', 'userservice:auth:signupwithemailpassword %O', error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {
         const message = (error.meta as { target: Array<string> }).target[0];
@@ -118,7 +119,11 @@ const getUserForPassportGoogleSignUpStrategy = async (
       error: false,
     };
   } catch (error) {
-    console.log(error);
+    logger.log(
+      'error',
+      'userservice:auth:getuserforpassportlocalstrategy %O',
+      error,
+    );
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002')
         return {
@@ -188,7 +193,7 @@ const verifySignUpEmail = async (
     });
     return { message: 'Email verified successfully', error: false };
   } catch (error) {
-    console.log(error);
+    logger.log('error', 'userservice:auth:verifysignupemail %O', error);
     return {
       message: 'An error occured while processing your request',
       error: true,
@@ -215,7 +220,7 @@ const sendResetPasswordMail = async (
       error: false,
     };
   } catch (error) {
-    console.log(error);
+    logger.log('error', 'userservice:auth:verifysignupemail %O', error);
     return {
       message: 'An error occured while processing your request',
       error: true,
@@ -246,7 +251,7 @@ const resetPassword = async (
     });
     return { message: 'Password reset successfully', error: false };
   } catch (error) {
-    console.log(error);
+    logger.log('error', 'userservice:auth:resetpassword %O', error);
     return {
       message: 'An error occured while processing your request',
       error: true,

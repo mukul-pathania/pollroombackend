@@ -5,11 +5,14 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import passport from 'passport';
 import session from 'express-session';
+import expressWinston from 'express-winston';
+import winston from 'winston';
 import setUpPassportAuth from './config/passport';
 import cors from 'cors';
 import routes from './routes';
 import config from './config';
 import registerSocketEventHandlers from './config/socketio';
+import logger from './util/logger';
 
 dotenv.config();
 
@@ -35,7 +38,13 @@ const startServer = (): HTTPServer => {
   );
 
   setUpPassportAuth(passport);
-  registerSocketEventHandlers(io);
+  app.use(
+    expressWinston.logger({
+      meta: false,
+      transports: [new winston.transports.Console()],
+      expressFormat: true,
+    }),
+  );
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
@@ -50,10 +59,11 @@ const startServer = (): HTTPServer => {
   app.use(passport.initialize());
   app.use(passport.session());
 
+  registerSocketEventHandlers(io);
   app.use('/', routes);
 
   return httpServer.listen(PORT, () => {
-    console.log(`Server running on port ${PORT} in ${config.NODE_ENV} mode`);
+    logger.info(`Server running on port ${PORT} in ${config.NODE_ENV} mode`);
   });
 };
 

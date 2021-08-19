@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Request, Response } from 'express';
 import UserService from '../services/UserService/index';
+import logger from '../util/logger';
 
 const dashBoardInfo = async (req: Request, res: Response) => {
   try {
@@ -9,7 +10,7 @@ const dashBoardInfo = async (req: Request, res: Response) => {
     );
     return res.json(response);
   } catch (error) {
-    console.log(error);
+    logger.log('error', 'profilecontroller:dashboardinfo %O', error);
     return res.json({
       message: 'An error occured while processing your request',
       error: true,

@@ -3,6 +3,7 @@ import passportLocal from 'passport-local';
 import passportGoogle from 'passport-google-oauth20';
 import UserService from '../services/UserService/index';
 import config from './index';
+import logger from '../util/logger';
 
 const ERROR_MESSAGE = 'An error occured while processing your request';
 const GOOGLE_CLIENT_ID = config.GOOGLE_CLIENT_ID;
@@ -81,7 +82,7 @@ export default function SetUpPassportAuth(passport: PassportStatic): void {
             error: response.error,
           });
         } catch (error) {
-          console.log(error);
+          logger.log('error', 'Error in googleLogin passport: %O', error);
           return done(null, undefined, {
             message: 'An error occured while processing your request',
             error: true,

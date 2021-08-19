@@ -1,4 +1,5 @@
 import prisma from '../../prismaClient';
+import logger from '../../util/logger';
 
 const dashBoardInfo = async (
   userId: string,
@@ -41,7 +42,7 @@ const dashBoardInfo = async (
       pollsCreated: pollsCreated || 0,
     };
   } catch (error) {
-    console.log(error);
+    logger.log('error', 'userservice:profile:dashboardinfo %O', error);
     return {
       message: 'An error occured while processing your request',
       error: true,

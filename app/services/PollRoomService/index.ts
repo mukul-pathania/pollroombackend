@@ -2,6 +2,7 @@ import { user, Prisma } from '@prisma/client';
 import prisma from '../../prismaClient';
 import JWT from 'jsonwebtoken';
 import config from '../../config';
+import logger from '../../util/logger';
 
 const createRoom = async (
   user: user,
@@ -22,7 +23,7 @@ const createRoom = async (
     });
     return { message: 'Success', error: false, roomId: room.id };
   } catch (error) {
-    console.log(error);
+    logger.log('error', 'pollroomservice:createroom  %O', error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002')
         return {
@@ -132,7 +133,7 @@ const getRoomInfo = async (
     });
     return { message: 'Success', error: false, roomInfo, socketToken: token };
   } catch (error) {
-    console.log(error);
+    logger.log('error', 'pollroomservice:getroominfo  %O', error);
     return {
       message: 'An error occured while processing your request',
       error: true,
@@ -159,6 +160,7 @@ const joinRoom = async (
     });
     return { message: 'Success', error: false, roomId: room.id };
   } catch (error) {
+    logger.log('error', 'pollroomservice:joinroom %O', error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2016')
         return { message: 'No such room exists', error: true };
