@@ -32,7 +32,7 @@ const signUpWithEmailPassword = async (
         provider: 'EMAIL',
       },
     });
-    EmailService.sendSignUpEmail(created_user);
+    await EmailService.sendSignUpEmail(created_user);
     return { error: false, message: 'User signed up successfully' };
   } catch (error) {
     logger.log('error', 'userservice:auth:signupwithemailpassword %O', error);
