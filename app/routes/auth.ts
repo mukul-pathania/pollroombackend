@@ -21,6 +21,7 @@ router.post('/password/reset/change', authControllers.resetPassword);
 router.get(
   '/google/signup',
   passport.authenticate('googleSignup', {
+    session: false,
     scope: ['profile', 'email'],
   }),
 );
@@ -30,6 +31,7 @@ router.get('/google/signup/callback', authControllers.googleSignUpCallback);
 router.get(
   '/google/login',
   passport.authenticate('googleLogin', {
+    session: false,
     scope: ['profile', 'email'],
   }),
 );

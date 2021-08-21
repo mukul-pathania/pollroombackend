@@ -32,18 +32,30 @@ const SignUpWithEmailPassword = async (req: Request, res: Response) => {
 };
 
 const loginWithEmailPassword = (req: Request, res: Response) => {
-  passport.authenticate('local', function (err, user, message) {
-    if (err || !user) {
-      return res.json({ ...message, error: true });
-    }
-    req.logIn(user, function (err) {
-      if (err) {
-        logger.log('error', 'userservice:loginwithemailpassword %O', err);
-        return res.json({ message: 'Failed to log you in', error: true });
+  passport.authenticate(
+    'local',
+    { session: false },
+    function (err, user, message) {
+      if (err || !user) {
+        return res.json({ ...message, error: true });
       }
-      return res.json({ ...message });
-    });
-  })(req, res);
+      req.logIn(user, { session: false }, function (err) {
+        if (err) {
+          logger.log('error', 'userservice:loginwithemailpassword %O', err);
+          return res.json({ message: 'Failed to log you in', error: true });
+        }
+        const token = UserService.auth.generateAuthToken(user);
+        const refreshToken = UserService.auth.generateRefreshToken(user);
+
+        res.cookie('refreshToken', refreshToken, {
+          maxAge:
+            1000 * 60 * 60 * 24 * parseInt(config.REFRESH_TOKEN_VALIDITY_DAYS),
+          httpOnly: true,
+        });
+        return res.json({ ...message, error: false, token: token });
+      });
+    },
+  )(req, res);
 };
 
 const logout = (req: Request, res: Response) => {
@@ -147,17 +159,23 @@ const googleLoginCallback = (req: Request, res: Response) => {
         `${config.CLIENT_URL}/auth/google/callback/login/failed#message=${encodedMessage}`,
       );
     }
-    req.logIn(user, function (err) {
+    req.logIn(user, { session: false }, function (err) {
       if (err) {
-        const encodedMessage = encodeURIComponent(
-          '#message=Failed to log you in',
-        );
+        const encodedMessage = encodeURIComponent('Failed to log you in');
         return res.redirect(
-          `${config.CLIENT_URL}/auth/google/callback/login/failed#${encodedMessage}`,
+          `${config.CLIENT_URL}/auth/google/callback/login/failed#message=${encodedMessage}`,
         );
       }
+      const token = UserService.auth.generateAuthToken(user);
+      const refreshToken = UserService.auth.generateRefreshToken(user);
+
+      res.cookie('refreshToken', refreshToken, {
+        maxAge:
+          1000 * 60 * 60 * 24 * parseInt(config.REFRESH_TOKEN_VALIDITY_DAYS),
+        httpOnly: true,
+      });
       return res.redirect(
-        `${config.CLIENT_URL}/auth/google/callback/login/success`,
+        `${config.CLIENT_URL}/auth/google/callback/login/success#token=${token}`,
       );
     });
   })(req, res);

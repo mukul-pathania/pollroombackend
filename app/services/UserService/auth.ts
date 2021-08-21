@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import EmailService from '../EmailService';
 import JWT from 'jsonwebtoken';
 import logger from '../../util/logger';
+import config from '../../config';
 
 const signUpWithEmailPassword = async (
   username: string,
@@ -93,6 +94,11 @@ const getUserForPassportLocalStrategy = async (
       error: false,
     };
   } catch (error) {
+    logger.log(
+      'error',
+      'userservice:auth:getuserforpassportlocalstrategy %O',
+      error,
+    );
     return {
       user: false,
       message: 'An error occured while proccessing your request',
@@ -121,7 +127,7 @@ const getUserForPassportGoogleSignUpStrategy = async (
   } catch (error) {
     logger.log(
       'error',
-      'userservice:auth:getuserforpassportlocalstrategy %O',
+      'userservice:auth:getuserforpassportgooglesignupstrategy %O',
       error,
     );
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -160,6 +166,12 @@ const getUserForPassportGoogleLoginStrategy = async (
       error: false,
     };
   } catch (error) {
+    logger.log(
+      'error',
+      'userservice:auth:getuserforpassportgoogleloginstrategy %O',
+      error,
+    );
+
     return {
       user: undefined,
       message: 'An error occured while processing your request',
@@ -169,7 +181,21 @@ const getUserForPassportGoogleLoginStrategy = async (
 };
 
 const getUserById = async (id: string): Promise<user | null> => {
-  return await prisma.user.findFirst({ where: { id: id } });
+  try {
+    return await prisma.user.findFirst({ where: { id: id } });
+  } catch (error) {
+    logger.log('error', 'userservice:auth:getuserbyid %O', error);
+    return null;
+  }
+};
+
+const getUserByUserName = async (username: string): Promise<user | null> => {
+  try {
+    return await prisma.user.findFirst({ where: { username: username } });
+  } catch (error) {
+    logger.log('error', 'userservice:auth:getuserbyusername %O', error);
+    return null;
+  }
 };
 
 const verifySignUpEmail = async (
@@ -220,7 +246,7 @@ const sendResetPasswordMail = async (
       error: false,
     };
   } catch (error) {
-    logger.log('error', 'userservice:auth:verifysignupemail %O', error);
+    logger.log('error', 'userservice:auth:sendresetpasswordmail %O', error);
     return {
       message: 'An error occured while processing your request',
       error: true,
@@ -259,12 +285,35 @@ const resetPassword = async (
   }
 };
 
+const generateAuthToken = (user: user): string => {
+  logger.info(
+    'userservice:auth:generateauthtoken Generating token for user: %s',
+    user.id,
+  );
+  return JWT.sign({ username: user.username }, config.TOKEN_SECRET, {
+    expiresIn: `${config.TOKEN_VALIDITY_MINUTES}m`,
+  });
+};
+
+const generateRefreshToken = (user: user): string => {
+  logger.info(
+    'userservice:auth:generaterefreshtoken Generating token for user: %s',
+    user.id,
+  );
+  return JWT.sign({ username: user.username }, config.REFRESH_TOKEN_SECRET, {
+    expiresIn: `${config.REFRESH_TOKEN_VALIDITY_DAYS}d`,
+  });
+};
+
 export default {
   signUpWithEmailPassword,
   getUserForPassportLocalStrategy,
   getUserForPassportGoogleSignUpStrategy,
   getUserForPassportGoogleLoginStrategy,
   getUserById,
+  getUserByUserName,
+  generateAuthToken,
+  generateRefreshToken,
   verifySignUpEmail,
   sendResetPasswordMail,
   resetPassword,

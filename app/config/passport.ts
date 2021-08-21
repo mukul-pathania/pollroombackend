@@ -1,6 +1,7 @@
 import { PassportStatic } from 'passport';
 import passportLocal from 'passport-local';
 import passportGoogle from 'passport-google-oauth20';
+import passportJWT from 'passport-jwt';
 import UserService from '../services/UserService/index';
 import config from './index';
 import logger from '../util/logger';
@@ -10,6 +11,29 @@ const GOOGLE_CLIENT_ID = config.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = config.GOOGLE_CLIENT_SECRET;
 
 export default function SetUpPassportAuth(passport: PassportStatic): void {
+  passport.use(
+    new passportJWT.Strategy(
+      {
+        jwtFromRequest: passportJWT.ExtractJwt.fromAuthHeaderAsBearerToken(),
+        secretOrKey: config.TOKEN_SECRET,
+      },
+      async (jwt_payload, done) => {
+        try {
+          const user = await UserService.auth.getUserByUserName(
+            jwt_payload.username,
+          );
+          return done(null, user);
+        } catch (error) {
+          logger.log('error', 'Error in jwt passport: %O', error);
+          return done(null, false, {
+            message: 'An error occured while processing your request',
+            error: true,
+          });
+        }
+      },
+    ),
+  );
+
   passport.use(
     new passportLocal.Strategy(
       { usernameField: 'email', passReqToCallback: true },
@@ -91,18 +115,4 @@ export default function SetUpPassportAuth(passport: PassportStatic): void {
       },
     ),
   );
-
-  passport.serializeUser((user, done) => {
-    done(null, user.id);
-  });
-
-  passport.deserializeUser(async (id, done) => {
-    try {
-      const user = await UserService.auth.getUserById(id as string);
-      if (user) return done(false, user);
-      return done(false, null);
-    } catch (error) {
-      return done(null, false);
-    }
-  });
 }

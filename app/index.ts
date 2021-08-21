@@ -4,7 +4,6 @@ import { Server } from 'socket.io';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import passport from 'passport';
-import session from 'express-session';
 import expressWinston from 'express-winston';
 import winston from 'winston';
 import setUpPassportAuth from './config/passport';
@@ -51,15 +50,7 @@ const startServer = (): HTTPServer => {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  app.use(
-    session({
-      secret: config.SESSION_SECRET,
-      resave: false,
-      saveUninitialized: false,
-    }),
-  );
   app.use(passport.initialize());
-  app.use(passport.session());
 
   registerSocketEventHandlers(io);
   app.use('/', routes);
