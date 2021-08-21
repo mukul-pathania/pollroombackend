@@ -4,6 +4,7 @@ import { Server } from 'socket.io';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import passport from 'passport';
+import cookieParser from 'cookie-parser';
 import expressWinston from 'express-winston';
 import winston from 'winston';
 import setUpPassportAuth from './config/passport';
@@ -35,7 +36,7 @@ const startServer = (): HTTPServer => {
       credentials: true,
     }),
   );
-
+  app.use(cookieParser());
   setUpPassportAuth(passport);
   if (config.NODE_ENV != 'test') {
     app.use(

@@ -12,9 +12,6 @@ const authCheckMiddleware = (
     'jwt',
     { session: false },
     function (err, user, message) {
-      console.log('err: ', err);
-      console.log('user: ', user);
-      console.log('message: ', message);
       if (err || !user) {
         return res.status(401).json({
           message: message?.message || 'You are not authenticated',
@@ -24,7 +21,6 @@ const authCheckMiddleware = (
       req.logIn(user, { session: false }, function (err) {
         if (err) {
           logger.log('error', 'authmiddleware:authcheckmiddleware %O', err);
-          console.log(27);
           return res.status(401).json({
             message: 'You are not authenticated',
             error: true,

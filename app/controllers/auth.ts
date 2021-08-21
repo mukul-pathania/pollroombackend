@@ -39,13 +39,14 @@ const loginWithEmailPassword = (req: Request, res: Response) => {
       if (err || !user) {
         return res.json({ ...message, error: true });
       }
-      req.logIn(user, { session: false }, function (err) {
+      req.logIn(user, { session: false }, async function (err) {
         if (err) {
           logger.log('error', 'userservice:loginwithemailpassword %O', err);
           return res.json({ message: 'Failed to log you in', error: true });
         }
         const token = UserService.auth.generateAuthToken(user);
-        const refreshToken = UserService.auth.generateRefreshToken(user);
+        const refreshToken =
+          await UserService.auth.generateAndWriteRefreshToken(user);
 
         res.cookie('refreshToken', refreshToken, {
           maxAge:
@@ -159,7 +160,7 @@ const googleLoginCallback = (req: Request, res: Response) => {
         `${config.CLIENT_URL}/auth/google/callback/login/failed#message=${encodedMessage}`,
       );
     }
-    req.logIn(user, { session: false }, function (err) {
+    req.logIn(user, { session: false }, async function (err) {
       if (err) {
         const encodedMessage = encodeURIComponent('Failed to log you in');
         return res.redirect(
@@ -167,7 +168,9 @@ const googleLoginCallback = (req: Request, res: Response) => {
         );
       }
       const token = UserService.auth.generateAuthToken(user);
-      const refreshToken = UserService.auth.generateRefreshToken(user);
+      const refreshToken = await UserService.auth.generateAndWriteRefreshToken(
+        user,
+      );
 
       res.cookie('refreshToken', refreshToken, {
         maxAge:
@@ -181,6 +184,22 @@ const googleLoginCallback = (req: Request, res: Response) => {
   })(req, res);
 };
 
+const refreshTokenForUser = async (req: Request, res: Response) => {
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken)
+    return res
+      .status(401)
+      .json({ message: 'No refresh token found', error: true });
+  const response = await UserService.auth.refreshTokenForUser(refreshToken);
+  if (response.error) return res.status(401).json(response);
+  res.cookie('refreshToken', response.refreshToken, {
+    maxAge: 1000 * 60 * 60 * 24 * parseInt(config.REFRESH_TOKEN_VALIDITY_DAYS),
+    httpOnly: true,
+  });
+  delete response.refreshToken;
+  return res.json(response);
+};
+
 export default {
   SignUpWithEmailPassword,
   loginWithEmailPassword,
@@ -191,4 +210,5 @@ export default {
   googleSignUpCallback,
   sendPasswordResetEmail,
   resetPassword,
+  refreshTokenForUser,
 };

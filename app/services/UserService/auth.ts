@@ -295,14 +295,56 @@ const generateAuthToken = (user: user): string => {
   });
 };
 
-const generateRefreshToken = (user: user): string => {
+const generateAndWriteRefreshToken = async (user: user): Promise<string> => {
   logger.info(
     'userservice:auth:generaterefreshtoken Generating token for user: %s',
     user.id,
   );
-  return JWT.sign({ username: user.username }, config.REFRESH_TOKEN_SECRET, {
-    expiresIn: `${config.REFRESH_TOKEN_VALIDITY_DAYS}d`,
-  });
+  const token = JWT.sign(
+    { username: user.username },
+    config.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: `${config.REFRESH_TOKEN_VALIDITY_DAYS}d`,
+    },
+  );
+  try {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { refresh_token: token },
+    });
+  } catch (error) {
+    logger.log('error', 'userservice:auth:generaterefreshtoken %O', error);
+  }
+  return token;
+};
+
+const refreshTokenForUser = async (
+  refreshToken: string,
+): Promise<{
+  token: string;
+  refreshToken?: string;
+  message: string;
+  error: boolean;
+}> => {
+  try {
+    const decodedToken = JWT.verify(
+      refreshToken,
+      config.REFRESH_TOKEN_SECRET,
+    ) as { username: string };
+    const user = await prisma.user.findFirst({
+      where: { username: decodedToken.username, refresh_token: refreshToken },
+    });
+    if (!user) throw new Error('Invalid token');
+    return {
+      token: generateAuthToken(user),
+      refreshToken: await generateAndWriteRefreshToken(user),
+      error: false,
+      message: 'Generated new token successfully',
+    };
+  } catch (error) {
+    logger.log('error', 'userservice:auth:refreshtokenforuser %O', error);
+    return { token: '', refreshToken: '', error: true, message: error.message };
+  }
 };
 
 export default {
@@ -313,8 +355,9 @@ export default {
   getUserById,
   getUserByUserName,
   generateAuthToken,
-  generateRefreshToken,
+  generateAndWriteRefreshToken,
   verifySignUpEmail,
   sendResetPasswordMail,
   resetPassword,
+  refreshTokenForUser,
 };

@@ -43,4 +43,6 @@ router.get(
 
 router.get('/google/login/callback', authControllers.googleLoginCallback);
 
+router.get('/refresh_token', authControllers.refreshTokenForUser);
+
 export default router;
