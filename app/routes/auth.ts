@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import passport from 'passport';
 import authControllers from '../controllers/auth';
+import authMiddleware from '../middleware/auth';
 
 const router = Router();
 
@@ -10,7 +11,11 @@ router.post('/login', authControllers.loginWithEmailPassword);
 
 router.get('/logout', authControllers.logout);
 
-router.get('/verify', authControllers.verify);
+router.get(
+  '/verify',
+  authMiddleware.authCheckMiddleware,
+  authControllers.verify,
+);
 
 router.post('/email/verify', authControllers.verifySignUpEmail);
 
