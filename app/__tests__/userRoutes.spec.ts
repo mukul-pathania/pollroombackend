@@ -154,5 +154,8 @@ describe('User routes', () => {
       // Cleanup so the next run of this test works
       await prisma.room.deleteMany({ where: { creator: { email: email1 } } });
     }, 20000);
+
+    test.todo('Returns the correct number of votes casted');
+    test.todo('Return the correct number of polls created');
   });
 });
