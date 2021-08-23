@@ -18,7 +18,8 @@ jest.mock('../services/EmailService', () => ({
 
 let server: Server, axiosAPIClient: AxiosInstance, authToken: string;
 const email = 'roomCreator@test.com',
-  password = '123456';
+  password = '123456',
+  username = 'roomCretor1';
 
 beforeAll(async () => {
   server = startServer();
@@ -32,7 +33,7 @@ beforeAll(async () => {
   await axiosAPIClient.post('/auth/signup', {
     email,
     password,
-    username: 'roomCreator1',
+    username,
   });
   await prisma.user.update({
     where: { email: email },
@@ -136,6 +137,8 @@ describe('Room routes', () => {
         message: 'No auth token',
       });
     });
+
+    test.todo('Correct status codes are returned in all cases');
   });
 
   describe('POST /room/join', () => {
@@ -202,5 +205,100 @@ describe('Room routes', () => {
       expect(response.data).toMatchObject({ error: false, message: 'Success' });
       expect(response.data.roomId).toBeDefined();
     });
+
+    test.todo('Correct status codes are returned in all cases');
+  });
+
+  describe('GET /room/:id', () => {
+    test('User needs to be authenticated to access this route', async () => {
+      axiosAPIClient.defaults.headers.Authorization = '';
+      const roomId = '123456';
+      const response = await axiosAPIClient.get(`/room/${roomId}`);
+      expect(response.status).toBe(401);
+      expect(response.data).toStrictEqual({
+        error: true,
+        message: 'No auth token',
+      });
+    });
+
+    test('A user will get proper error message if he has not joined the room', async () => {
+      const roomName = 'RoomJustCreated12345',
+        email = 'RoomJustCreatedCreator12345@test.com',
+        password = '123456',
+        header = axiosAPIClient.defaults.headers.Authorization;
+
+      axiosAPIClient.defaults.headers.Authorization = '';
+
+      await axiosAPIClient.post('/auth/signup', {
+        email,
+        password,
+        username: 'RoomJustCreatedCreator23456',
+      });
+      await prisma.user.update({
+        where: { email: email },
+        data: { confirmed_at: new Date(), confirmation_token: '' },
+      });
+      const {
+        data: { token },
+      } = await axiosAPIClient.post('/auth/login', { email, password });
+      axiosAPIClient.defaults.headers.Authorization = `Bearer ${token}`;
+
+      const roomCreationResponse = await axiosAPIClient.post('/room/new', {
+        roomName,
+      });
+
+      axiosAPIClient.defaults.headers.Authorization = header;
+      const testResponse = await axiosAPIClient.get(
+        `/room/${roomCreationResponse.data.roomId}`,
+      );
+      expect(testResponse.data.error).toBe(true);
+      expect(testResponse.data.roomInfo).toBeNull();
+      expect(testResponse.data.message).toBe(
+        'You might not have joined the room, or no such room exists',
+      );
+
+      // Cleanup
+      await prisma.room.delete({ where: { name: roomName } });
+    });
+
+    test('Socket token is provided with the response, it will be used for socketio connection', async () => {
+      const roomName = 'RandomName094908u4390';
+      const {
+        data: { roomId },
+      } = await axiosAPIClient.post('/room/new', { roomName });
+      const response = await axiosAPIClient.get(`/room/${roomId}`);
+      expect(response.data.socketToken).toBeDefined();
+      expect(response.data.socketToken).not.toBeNull();
+
+      // Cleanup
+      prisma.room.delete({ where: { name: roomName } });
+    });
+
+    test('Information of the creator of room, time of creation is returned in response', async () => {
+      const roomName = 'uniquename9090j2opg';
+      const {
+        data: { roomId },
+      } = await axiosAPIClient.post('/room/new', { roomName });
+      const response = await axiosAPIClient.get(`/room/${roomId}`);
+      expect(response.data.roomInfo.creator.username).toBe(username);
+      expect(response.data.roomInfo.created_at).toBeDefined();
+      expect(response.data.roomInfo.created_at).not.toBeNull();
+
+      // Cleanup
+      prisma.room.delete({ where: { name: roomName } });
+    });
+
+    test('Polls created in this room are returned in response', async () => {
+      const roomName = 'randomname290jhweiklmearf';
+      const {
+        data: { roomId },
+      } = await axiosAPIClient.post('/room/new', { roomName });
+      const response = await axiosAPIClient.get(`/room/${roomId}`);
+      expect(response.data.roomInfo.polls).toBeDefined();
+    });
+
+    test.todo('Correct status codes are returned in all cases');
+
+    // Cleanup
   });
 });
