@@ -60,7 +60,10 @@ const loginWithEmailPassword = (req: Request, res: Response) => {
 };
 
 const logout = (req: Request, res: Response) => {
-  req.logOut();
+  // Remove the refresh_token
+  res.cookie('refreshToken', '', {
+    httpOnly: true,
+  });
   res.json({ message: 'Logged out successfully' });
 };
 

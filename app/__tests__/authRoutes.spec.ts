@@ -241,4 +241,42 @@ describe('Auth routes', () => {
       await prisma.user.delete({ where: { username } });
     });
   });
+  describe('GET /auth/verify', () => {
+    test('Provides email and username of the current user when token is provided in the request', async () => {
+      const username = '89h3elkwrandomuser',
+        email = 'ouinw0jisadrandomness@test.com',
+        password = '123456';
+      await axiosAPIClient.post('/auth/signup', { username, email, password });
+      await prisma.user.update({
+        where: { email },
+        data: { confirmed_at: new Date(), confirmation_token: '' },
+      });
+      const {
+        data: { token },
+      } = await axiosAPIClient.post('/auth/login', { email, password });
+      axiosAPIClient.defaults.headers.Authorization = `Bearer ${token}`;
+      const response = await axiosAPIClient.get('/auth/verify');
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual({
+        message: 'You are authenticated',
+        isAuthenticated: true,
+        username: username,
+        email: email,
+        error: false,
+      });
+
+      //   Cleanup
+      axiosAPIClient.defaults.headers.Authorization = '';
+      prisma.user.delete({ where: { email } });
+    });
+
+    test('Proper message and status is returned when no token is provided', async () => {
+      const response = await axiosAPIClient.get('/auth/verify');
+      expect(response.status).toBe(401);
+      expect(response.data).toStrictEqual({
+        message: 'No auth token',
+        error: true,
+      });
+    });
+  });
 });
