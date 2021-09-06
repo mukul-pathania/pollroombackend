@@ -7,7 +7,13 @@ const registerSocketEventHandlers = (io: Server): void => {
   io.use((socket, next) => {
     const token = socket.handshake.auth.token;
     try {
-      JWT.verify(token, config.SOCKET_TOKEN_SECRET);
+      const { username, roomId } = JWT.verify(
+        token,
+        config.SOCKET_TOKEN_SECRET,
+      ) as { username: string; roomId: string };
+      logger.info(`user: ${username} is listening to roomId: ${roomId}`);
+      socket.data.username = username;
+      socket.data.roomId = roomId;
     } catch (error) {
       logger.log('error', 'Socket connection failure: %O', error);
       const err = new Error('Invalid token');
@@ -16,11 +22,9 @@ const registerSocketEventHandlers = (io: Server): void => {
     next();
   });
   io.on('connection', (socket: Socket) => {
-    logger.silly('emitting message');
     socket.on('disconnect', (reason) => {
       logger.info(`socket ${socket.id} disconnected due to reason ${reason}`);
     });
-    socket.emit('message', 'hello');
   });
 };
 

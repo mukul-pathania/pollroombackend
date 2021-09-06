@@ -86,7 +86,7 @@ const getRoomInfo = async (
           },
         ],
       },
-      select: { id: true, encrypted_password: true },
+      select: { id: true, username: true },
     });
     if (!isUserInRoomOrAdmin)
       return {
@@ -128,9 +128,13 @@ const getRoomInfo = async (
         socketToken: '',
         roomInfo: null,
       };
-    const token = JWT.sign({ room_id: roomId }, config.SOCKET_TOKEN_SECRET, {
-      expiresIn: '30m',
-    });
+    const token = JWT.sign(
+      { roomId, username: isUserInRoomOrAdmin.username },
+      config.SOCKET_TOKEN_SECRET,
+      {
+        expiresIn: '30m',
+      },
+    );
     return { message: 'Success', error: false, roomInfo, socketToken: token };
   } catch (error) {
     logger.log('error', 'pollroomservice:getroominfo  %O', error);
