@@ -16,8 +16,7 @@
     "test:dev": "dotenv -e .env.test -- jest --watch --silent --runInBand --verbose",
     "db:migrate:dev": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
-    "db:migrate:test": "dotenv -e .env.test -- yarn prisma migrate dev",
-    "ci": "yarn test"
+    "db:migrate:test": "dotenv -e .env.test -- yarn prisma migrate dev"
   },
   "dependencies": {
     "@prisma/client": "2.27.0",
