@@ -9,7 +9,7 @@ import expressWinston from 'express-winston';
 import winston from 'winston';
 import setUpPassportAuth from './config/passport';
 import cors from 'cors';
-import routes from './routes';
+import routes from './routes/index.routes';
 import config from './config';
 import registerSocketEventHandlers from './config/socketio';
 import logger from './util/logger';

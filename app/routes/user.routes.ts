@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import profile from '../controllers/profile';
-import authMiddleware from '../middleware/auth';
+import profile from '../controllers/profile.controllers';
+import authMiddleware from '../middleware/auth.middlewares';
 
 const router = Router();
 router.use(authMiddleware.authCheckMiddleware);

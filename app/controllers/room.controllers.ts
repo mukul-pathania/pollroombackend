@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Request, Response } from 'express';
 import { user } from '@prisma/client';
-import PollRoomService from '../services/PollRoomService/index';
+import PollRoomService from '../services/PollRoomService';
 import logger from '../util/logger';
 
 const createRoom = async (req: Request, res: Response) => {

@@ -343,7 +343,12 @@ const refreshTokenForUser = async (
     };
   } catch (error) {
     logger.log('error', 'userservice:auth:refreshtokenforuser %O', error);
-    return { token: '', refreshToken: '', error: true, message: error.message };
+    return {
+      token: '',
+      refreshToken: '',
+      error: true,
+      message: (error as { message: string }).message,
+    };
   }
 };
 

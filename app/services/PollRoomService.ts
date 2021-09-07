@@ -1,8 +1,8 @@
 import { user, Prisma } from '@prisma/client';
-import prisma from '../../prismaClient';
+import prisma from '../prismaClient';
 import JWT from 'jsonwebtoken';
-import config from '../../config';
-import logger from '../../util/logger';
+import config from '../config';
+import logger from '../util/logger';
 
 const createRoom = async (
   user: user,
