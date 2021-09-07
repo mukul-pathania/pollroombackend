@@ -12,7 +12,7 @@ const registerSocketEventHandlers = (io: Server): void => {
         token,
         config.SOCKET_TOKEN_SECRET,
       ) as { username: string; roomId: string };
-      logger.info(`user: ${username} is listening to roomId: ${roomId}`);
+      logger.info(`user: ${username} wants to listen to roomId: ${roomId}`);
       socket.data.username = username;
       socket.data.roomId = roomId;
     } catch (error) {
@@ -23,11 +23,16 @@ const registerSocketEventHandlers = (io: Server): void => {
     next();
   });
   io.on('connection', (socket: Socket) => {
+    socket.on('room', async (roomId) => {
+      logger.info(
+        `User: ${socket.data.username} joined room: ${socket.data.roomId}`,
+      );
+      await socket.join(roomId);
+    });
     socket.on('disconnect', (reason) => {
       logger.info(`socket ${socket.id} disconnected due to reason ${reason}`);
     });
-
-    RegisterPollHandlers(socket);
+    RegisterPollHandlers(socket, io);
   });
 };
 

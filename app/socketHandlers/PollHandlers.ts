@@ -1,8 +1,8 @@
-import { Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import PollService from '../services/PollService';
 import logger from '../util/logger';
 
-const RegisterPollHandlers = (socket: Socket): void => {
+const RegisterPollHandlers = (socket: Socket, io: Server): void => {
   const createPoll = async (
     question: string,
     options: Array<{ option_text: string }>,
@@ -14,9 +14,11 @@ const RegisterPollHandlers = (socket: Socket): void => {
       options,
     );
     if (response.poll) {
-      socket
-        .to(socket.data.roomId)
-        .emit('poll:created', response.poll, response.message);
+      io.to(socket.data.roomId).emit(
+        'poll:created',
+        response.poll,
+        response.message,
+      );
       logger.info(
         `Created a new poll: ${response.poll.id} in room: ${socket.data.roomId}`,
       );
