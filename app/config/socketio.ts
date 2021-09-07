@@ -2,6 +2,7 @@ import { Server, Socket } from 'socket.io';
 import JWT from 'jsonwebtoken';
 import config from '.';
 import logger from '../util/logger';
+import RegisterPollHandlers from '../socketHandlers/PollHandlers';
 
 const registerSocketEventHandlers = (io: Server): void => {
   io.use((socket, next) => {
@@ -25,6 +26,8 @@ const registerSocketEventHandlers = (io: Server): void => {
     socket.on('disconnect', (reason) => {
       logger.info(`socket ${socket.id} disconnected due to reason ${reason}`);
     });
+
+    RegisterPollHandlers(socket);
   });
 };
 
