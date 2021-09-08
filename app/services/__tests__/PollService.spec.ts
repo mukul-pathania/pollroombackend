@@ -39,7 +39,7 @@ describe('createPoll: Used for creating polls through websockets', () => {
     );
 
     response = await PollService.createPoll(
-      username,
+      data.id,
       data.rooms_created[0].id,
       'Test question',
       [
