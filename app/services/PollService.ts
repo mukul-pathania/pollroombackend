@@ -17,14 +17,14 @@ type pollType = poll & {
 };
 
 const createPoll = async (
-  username: string,
+  userId: string,
   roomId: string,
   question: string,
   options: Array<{ option_text: string }>,
 ): Promise<{ poll: pollType | null; message: string }> => {
   try {
     const isUserAdmin = await prisma.room.findFirst({
-      where: { creator: { username: username }, id: roomId },
+      where: { creator_id: userId, id: roomId },
     });
     if (!isUserAdmin) {
       return {
@@ -36,13 +36,13 @@ const createPoll = async (
       data: { question, room_id: roomId, options: { create: [...options] } },
       include: {
         options: {
-          orderBy: [{ created_at: 'asc' }],
+          orderBy: [{ option_text: 'asc' }],
           select: {
             id: true,
             option_text: true,
             created_at: true,
             _count: { select: { votes: true } },
-            votes: { where: { user: { username } }, select: { id: true } },
+            votes: { where: { user_id: userId }, select: { id: true } },
           },
         },
       },

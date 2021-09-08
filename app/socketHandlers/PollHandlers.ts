@@ -8,7 +8,7 @@ const RegisterPollHandlers = (socket: Socket, io: Server): void => {
     options: Array<{ option_text: string }>,
   ) => {
     const response = await PollService.createPoll(
-      socket.data.username,
+      socket.data.userId,
       socket.data.roomId,
       question,
       options,
@@ -33,6 +33,9 @@ const RegisterPollHandlers = (socket: Socket, io: Server): void => {
       pollId,
       optionId,
       socket.data.userId,
+    );
+    logger.info(
+      `new or updated vote for pollId: ${pollId} optionId: ${optionId} userId: ${socket.data.userId}`,
     );
     io.to(socket.data.roomId).emit(
       'poll:updated:vote',
