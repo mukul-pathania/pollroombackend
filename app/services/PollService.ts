@@ -57,4 +57,50 @@ const createPoll = async (
   }
 };
 
-export default { createPoll };
+const addOrUpdateVote = async (
+  pollId: string,
+  optionId: string,
+  userId: string,
+): Promise<{ message: string; poll: pollType | null }> => {
+  try {
+    const vote = await prisma.vote.upsert({
+      where: { poll_id_user_id: { poll_id: pollId, user_id: userId } },
+      create: {
+        poll_id: pollId,
+        option_id: optionId,
+        user_id: userId,
+      },
+      update: { option_id: optionId },
+      select: {
+        poll: {
+          select: {
+            id: true,
+            question: true,
+            created_at: true,
+            updated_at: true,
+            room_id: true,
+            options: {
+              orderBy: [{ option_text: 'asc' }],
+              select: {
+                id: true,
+                option_text: true,
+                created_at: true,
+                _count: { select: { votes: true } },
+                votes: { where: { user_id: userId }, select: { id: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+    return { message: 'Vote casted successfully', poll: vote.poll };
+  } catch (error) {
+    logger.log('error', 'pollservice:addorupdatevote %O', error);
+    return {
+      message: 'An error occured while processing your request',
+      poll: null,
+    };
+  }
+};
+
+export default { createPoll, addOrUpdateVote };

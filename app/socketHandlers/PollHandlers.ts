@@ -25,7 +25,24 @@ const RegisterPollHandlers = (socket: Socket, io: Server): void => {
     }
   };
 
+  const addOrUpdateVote = async (
+    pollId: string,
+    optionId: string,
+  ): Promise<void> => {
+    const response = await PollService.addOrUpdateVote(
+      pollId,
+      optionId,
+      socket.data.userId,
+    );
+    io.to(socket.data.roomId).emit(
+      'poll:updated:vote',
+      response.poll,
+      response.message,
+    );
+  };
+
   socket.on('poll:create', createPoll);
+  socket.on('poll:castvote', addOrUpdateVote);
 };
 
 export default RegisterPollHandlers;

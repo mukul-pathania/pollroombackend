@@ -108,7 +108,7 @@ const getRoomInfo = async (
             question: true,
             created_at: true,
             options: {
-              orderBy: [{ created_at: 'asc' }],
+              orderBy: [{ option_text: 'asc' }],
               select: {
                 id: true,
                 option_text: true,

@@ -3,9 +3,10 @@ import JWT from 'jsonwebtoken';
 import config from '.';
 import logger from '../util/logger';
 import RegisterPollHandlers from '../socketHandlers/PollHandlers';
+import UserService from '../services/UserService';
 
 const registerSocketEventHandlers = (io: Server): void => {
-  io.use((socket, next) => {
+  io.use(async (socket, next) => {
     const token = socket.handshake.auth.token;
     try {
       const { username, roomId } = JWT.verify(
@@ -13,8 +14,10 @@ const registerSocketEventHandlers = (io: Server): void => {
         config.SOCKET_TOKEN_SECRET,
       ) as { username: string; roomId: string };
       logger.info(`user: ${username} wants to listen to roomId: ${roomId}`);
+      const user = await UserService.auth.getUserByUserName(username);
       socket.data.username = username;
       socket.data.roomId = roomId;
+      socket.data.userId = user?.id;
     } catch (error) {
       logger.log('error', 'Socket connection failure: %O', error);
       const err = new Error('Invalid token');
