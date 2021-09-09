@@ -52,6 +52,8 @@ const loginWithEmailPassword = (req: Request, res: Response) => {
           maxAge:
             1000 * 60 * 60 * 24 * parseInt(config.REFRESH_TOKEN_VALIDITY_DAYS),
           httpOnly: true,
+          sameSite: 'none',
+          secure: true,
         });
         return res.json({ ...message, error: false, token: token });
       });
@@ -63,6 +65,8 @@ const logout = (req: Request, res: Response) => {
   // Remove the refresh_token
   res.cookie('refreshToken', '', {
     httpOnly: true,
+    sameSite: 'none',
+    secure: true,
   });
   res.json({ message: 'Logged out successfully' });
 };
@@ -179,6 +183,8 @@ const googleLoginCallback = (req: Request, res: Response) => {
         maxAge:
           1000 * 60 * 60 * 24 * parseInt(config.REFRESH_TOKEN_VALIDITY_DAYS),
         httpOnly: true,
+        sameSite: 'none',
+        secure: true,
       });
       return res.redirect(
         `${config.CLIENT_URL}/auth/google/callback/login/success#token=${token}`,
@@ -198,6 +204,8 @@ const refreshTokenForUser = async (req: Request, res: Response) => {
   res.cookie('refreshToken', response.refreshToken, {
     maxAge: 1000 * 60 * 60 * 24 * parseInt(config.REFRESH_TOKEN_VALIDITY_DAYS),
     httpOnly: true,
+    sameSite: 'none',
+    secure: true,
   });
   delete response.refreshToken;
   return res.json(response);
