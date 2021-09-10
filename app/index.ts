@@ -1,5 +1,5 @@
 import { createServer, Server as HTTPServer } from 'http';
-import express, { Express } from 'express';
+import express, { Express, ErrorRequestHandler } from 'express';
 import { Server } from 'socket.io';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
@@ -55,6 +55,16 @@ const startServer = (): HTTPServer => {
 
   registerSocketEventHandlers(io);
   app.use('/', routes);
+
+  const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+    res.status(500).json({
+      message: 'An error occured while processing your request',
+      error: true,
+    });
+  };
+
+  // Catch all error handler, should always be last
+  app.use(errorHandler);
 
   return httpServer.listen(PORT, () => {
     logger.info(`Server running on port ${PORT} in ${config.NODE_ENV} mode`);
