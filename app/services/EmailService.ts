@@ -1,19 +1,11 @@
 import { user } from '@prisma/client';
-import nodemailer from 'nodemailer';
 import JWT from 'jsonwebtoken';
 import config from '../config';
 import prisma from '../prismaClient';
 import logger from '../util/logger';
+import sendgrid from '@sendgrid/mail';
 
-const Transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: config.EMAIL_USER,
-    pass: config.EMAIL_PASSWORD,
-  },
-});
+sendgrid.setApiKey(config.SENDGRID_API_KEY);
 
 const sendPasswordResetEmail = async (user: user): Promise<void> => {
   try {
@@ -33,12 +25,13 @@ const sendPasswordResetEmail = async (user: user): Promise<void> => {
     <h1>Hello ${user.username}</h1>
     <p>Click <a href=${link}>here</a> to reset your email</p>
     `;
-    const info = await Transporter.sendMail({
-      from: 'PollRoom',
+    const msg = {
       to: user.email,
+      from: config.EMAIL_USER,
       subject: 'Reset your password',
       html: HTML,
-    });
+    };
+    const info = await sendgrid.send(msg);
     logger.log('info', 'emailservice:sendresetpasswordemail %O', info);
   } catch (error) {
     logger.log('error', 'emailservice:sendresetpasswordemail %O', error);
@@ -63,12 +56,14 @@ const sendSignUpEmail = async (user: user): Promise<void> => {
     <h1>Hello ${user.username}</h1>
     <p>Click <a href=${link}>here</a> to confirm your email for PollRoom sign up</p>
     `;
-    const info = await Transporter.sendMail({
-      from: 'PollRoom',
+    const msg = {
+      from: config.EMAIL_USER,
       to: user.email,
       subject: 'Confirm your email for PollRoom sign up',
       html: HTML,
-    });
+    };
+
+    const info = await sendgrid.send(msg);
     logger.log('info', 'emailservice:sendsignupemail %O', info);
   } catch (error) {
     logger.log('error', 'emailservice:sendsignupemail %O', error);
