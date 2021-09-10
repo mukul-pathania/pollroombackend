@@ -6,7 +6,6 @@ export default {
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID as string,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET as string,
   EMAIL_USER: process.env.EMAIL_USER as string,
-  EMAIL_PASSWORD: process.env.EMAIL_PASSWORD as string,
   CLIENT_URL: process.env.CLIENT_URL,
   SOCKET_TOKEN_SECRET:
     process.env.SOCKET_TOKEN_SECRET || 'ljkhsaduhntolika89yvsdnlke480',
