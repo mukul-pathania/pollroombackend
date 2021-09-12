@@ -54,7 +54,7 @@
     "@types/passport-local": "^1.0.34",
     "@typescript-eslint/eslint-plugin": "^4.28.3",
     "@typescript-eslint/parser": "^4.28.3",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "concurrently": "^6.2.0",
     "docker-compose": "^0.23.13",
     "dotenv-cli": "^4.0.0",
