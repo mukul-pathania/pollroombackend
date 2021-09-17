@@ -53,7 +53,7 @@ type roomInfo = {
       created_at: Date;
       id: string;
       option_text: string;
-      _count: { votes: number } | null;
+      _count?: { votes: number };
       votes:
         | {
             id: string;
@@ -95,7 +95,7 @@ const getRoomInfo = async (
         socketToken: '',
         error: true,
       };
-    const roomInfo = await prisma.room.findFirst({
+    const roomInfo: roomInfo = await prisma.room.findFirst({
       where: { id: roomId },
       select: {
         creator: { select: { username: true, id: true } },
@@ -113,13 +113,37 @@ const getRoomInfo = async (
                 id: true,
                 option_text: true,
                 created_at: true,
-                _count: { select: { votes: true } },
+                // This _count is causing problems, prisma docs says to use _count in an top level select and this is not top level
+                // _count: { select: { votes: true } },
                 votes: { where: { user_id: userId }, select: { id: true } },
               },
             },
           },
         },
       },
+    });
+
+    // Get number of votes for each option in a poll
+    const options = await prisma.vote.groupBy({
+      where: { poll: { room_id: roomId } },
+      by: ['poll_id', 'option_id'],
+      _count: true,
+    });
+    const optionDictionary: {
+      [key: string]: { option_id: string; poll_id: string; _count: number };
+    } = {};
+    // Create a dictionary for fast lookup
+    options.forEach((option) => {
+      optionDictionary[option.option_id] = option;
+    });
+
+    // Set the number of votes for each option
+    roomInfo?.polls.forEach((poll) => {
+      poll.options.forEach((option) => {
+        if (optionDictionary[option.id]) {
+          option._count = { votes: optionDictionary[option.id]._count };
+        }
+      });
     });
     if (!roomInfo)
       return {
