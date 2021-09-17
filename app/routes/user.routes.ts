@@ -5,5 +5,6 @@ import authMiddleware from '../middleware/auth.middlewares';
 const router = Router();
 router.use(authMiddleware.authCheckMiddleware);
 router.get('/dashboard', profile.dashBoardInfo);
+router.get('/polls', profile.pollsCreated);
 
 export default router;

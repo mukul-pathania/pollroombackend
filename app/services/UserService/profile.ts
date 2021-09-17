@@ -76,4 +76,47 @@ const dashBoardInfo = async (
   }
 };
 
-export default { dashBoardInfo };
+type pollsCreatedType = {
+  id: string;
+  created_at: Date;
+  _count: {
+    vote: number;
+  } | null;
+  room: {
+    name: string;
+  };
+  question: string;
+  room_id: string;
+}[];
+
+const pollsCreated = async (
+  userId: string,
+): Promise<{
+  error: boolean;
+  message: string;
+  pollsCreated: pollsCreatedType;
+}> => {
+  try {
+    const polls = await prisma.poll.findMany({
+      where: { room: { creator_id: userId } },
+      select: {
+        room: { select: { name: true } },
+        question: true,
+        room_id: true,
+        created_at: true,
+        id: true,
+        _count: { select: { vote: true } },
+      },
+    });
+    return { message: 'Success', error: false, pollsCreated: polls };
+  } catch (error) {
+    logger.log('error', 'userservice:profile:pollscreated %O', error);
+    return {
+      message: 'An error occured while processing your request',
+      error: true,
+      pollsCreated: [],
+    };
+  }
+};
+
+export default { dashBoardInfo, pollsCreated };

@@ -18,4 +18,19 @@ const dashBoardInfo = async (req: Request, res: Response) => {
   }
 };
 
-export default { dashBoardInfo };
+const pollsCreated = async (req: Request, res: Response) => {
+  try {
+    const response = await UserService.profile.pollsCreated(
+      req.user?.id as string,
+    );
+    return res.json(response);
+  } catch (error) {
+    logger.log('error', 'profilecontroller:pollscreated %O', error);
+    return res.json({
+      message: 'An error occured while processing your request',
+      error: true,
+    });
+  }
+};
+
+export default { dashBoardInfo, pollsCreated };
