@@ -70,9 +70,6 @@ describe('User routes', () => {
       const { token } = response.data;
       expect(token).toBeDefined();
       axiosAPIClient.defaults.headers.Authorization = `Bearer ${token}`;
-      /**
-       *TODO: Arrangement is more than the actual test
-       */
 
       // Act
       const dashboardInfo = await axiosAPIClient.get('/user/dashboard');
@@ -80,6 +77,7 @@ describe('User routes', () => {
       // Assert
       expect(dashboardInfo.status).toBe(200);
       expect(dashboardInfo.data).toStrictEqual({
+        createdRooms: [],
         error: false,
         message: 'Success',
         roomsJoined: 0,
@@ -144,6 +142,7 @@ describe('User routes', () => {
       // Assert
       expect(dashboardInfo.status).toBe(200);
       expect(dashboardInfo.data).toStrictEqual({
+        createdRooms: [],
         error: false,
         message: 'Success',
         roomsJoined: roomCount,
