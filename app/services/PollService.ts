@@ -25,11 +25,18 @@ const createPoll = async (
   try {
     const isUserAdmin = await prisma.room.findFirst({
       where: { creator_id: userId, id: roomId },
+      select: { id: true, _count: { select: { polls: true } } },
     });
     if (!isUserAdmin) {
       return {
         poll: null,
         message: 'You are not authorized to create polls in this room',
+      };
+    }
+    if (isUserAdmin._count?.polls && isUserAdmin._count.polls >= 10) {
+      return {
+        poll: null,
+        message: 'You have already created 10 polls in this room',
       };
     }
     const createdPoll = await prisma.poll.create({
