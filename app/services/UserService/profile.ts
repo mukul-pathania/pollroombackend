@@ -91,6 +91,7 @@ type pollsCreatedType = {
 
 const pollsCreated = async (
   userId: string,
+  sortyBy: 'popular' | 'recent',
 ): Promise<{
   error: boolean;
   message: string;
@@ -98,6 +99,11 @@ const pollsCreated = async (
 }> => {
   try {
     const polls = await prisma.poll.findMany({
+      orderBy: {
+        ...(sortyBy === 'recent'
+          ? { created_at: 'desc' }
+          : { vote: { _count: 'desc' } }),
+      },
       where: { room: { creator_id: userId } },
       select: {
         room: { select: { name: true } },

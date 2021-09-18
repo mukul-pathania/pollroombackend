@@ -20,8 +20,10 @@ const dashBoardInfo = async (req: Request, res: Response) => {
 
 const pollsCreated = async (req: Request, res: Response) => {
   try {
+    const sortBy = req.query?.sortBy === 'popular' ? 'popular' : 'recent';
     const response = await UserService.profile.pollsCreated(
       req.user?.id as string,
+      sortBy,
     );
     return res.json(response);
   } catch (error) {
