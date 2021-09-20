@@ -7,5 +7,6 @@ router.use(authMiddleware.authCheckMiddleware);
 router.get('/dashboard', profile.dashBoardInfo);
 router.get('/polls', profile.pollsCreated);
 router.get('/rooms-joined', profile.roomsJoined);
+router.get('/votes', profile.votesCast);
 
 export default router;

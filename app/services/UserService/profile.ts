@@ -174,4 +174,45 @@ const roomsJoined = async (
   }
 };
 
-export default { dashBoardInfo, pollsCreated, roomsJoined };
+type votes = Array<{
+  id: string;
+  voteCreatedAt: Date;
+  pollCreatedAt: Date;
+  question: string;
+  roomId: string;
+  optionText: string;
+}>;
+
+const votesCast = async (
+  userId: string,
+): Promise<{ message: string; error: boolean; votes: votes }> => {
+  try {
+    const votes = await prisma.vote.findMany({
+      where: { user_id: userId },
+      select: {
+        id: true,
+        created_at: true,
+        poll: { select: { room_id: true, question: true, created_at: true } },
+        option: { select: { option_text: true } },
+      },
+    });
+    const votesProcessed: votes = votes.map((vote) => ({
+      id: vote.id,
+      voteCreatedAt: vote.created_at,
+      pollCreatedAt: vote.poll.created_at,
+      question: vote.poll.question,
+      roomId: vote.poll.room_id,
+      optionText: vote.option.option_text,
+    }));
+    return { message: 'Success', error: false, votes: votesProcessed };
+  } catch (error) {
+    logger.log('error', 'userservice:profile:votescast %O', error);
+    return {
+      message: 'An error occured while processing your request',
+      error: true,
+      votes: [],
+    };
+  }
+};
+
+export default { dashBoardInfo, pollsCreated, roomsJoined, votesCast };

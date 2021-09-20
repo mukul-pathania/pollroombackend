@@ -50,4 +50,18 @@ const roomsJoined = async (req: Request, res: Response) => {
   }
 };
 
-export default { dashBoardInfo, pollsCreated, roomsJoined };
+const votesCast = async (req: Request, res: Response) => {
+  try {
+    const response = await UserService.profile.votesCast(
+      req.user?.id as string,
+    );
+    return res.json(response);
+  } catch (error) {
+    return res.json({
+      message: 'An error occured while processing your request',
+      error: true,
+    });
+  }
+};
+
+export default { dashBoardInfo, pollsCreated, roomsJoined, votesCast };
