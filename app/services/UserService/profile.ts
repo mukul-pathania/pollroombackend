@@ -50,7 +50,7 @@ const dashBoardInfo = async (
         id: true,
         _count: { select: { polls: true, users: true } },
       },
-      orderBy: [{ created_at: 'asc' }],
+      orderBy: [{ created_at: 'desc' }],
     });
     const pollsCreated = user?.rooms_created.reduce((result, item) => {
       return result + item.polls.length;
