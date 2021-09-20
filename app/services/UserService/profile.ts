@@ -125,4 +125,53 @@ const pollsCreated = async (
   }
 };
 
-export default { dashBoardInfo, pollsCreated };
+type roomsJoinedType = Array<{
+  id: string;
+  name: string;
+  created_at: Date;
+  pollCount: number;
+  memberCount: number;
+}>;
+
+const roomsJoined = async (
+  userId: string,
+): Promise<{
+  error: boolean;
+  message: string;
+  roomsJoined: roomsJoinedType;
+}> => {
+  try {
+    const rooms = await prisma.user.findFirst({
+      where: { id: userId },
+      select: {
+        rooms: {
+          select: {
+            id: true,
+            name: true,
+            created_at: true,
+            polls: { select: { id: true } },
+            users: { select: { id: true } },
+          },
+        },
+      },
+    });
+    const roomsProcessed: roomsJoinedType =
+      rooms?.rooms.map((room) => ({
+        id: room.id,
+        name: room.name,
+        created_at: room.created_at,
+        pollCount: room.polls.length,
+        memberCount: room.users.length,
+      })) || [];
+    return { message: 'Success', error: false, roomsJoined: roomsProcessed };
+  } catch (error) {
+    logger.log('error', 'userservice:profile:roomsjoined %O', error);
+    return {
+      message: 'An error occured while processing your request',
+      roomsJoined: [],
+      error: true,
+    };
+  }
+};
+
+export default { dashBoardInfo, pollsCreated, roomsJoined };

@@ -35,4 +35,19 @@ const pollsCreated = async (req: Request, res: Response) => {
   }
 };
 
-export default { dashBoardInfo, pollsCreated };
+const roomsJoined = async (req: Request, res: Response) => {
+  try {
+    const response = await UserService.profile.roomsJoined(
+      req.user?.id as string,
+    );
+    return res.json(response);
+  } catch (error) {
+    logger.log('error', 'profilecontroller.roomsjoined %O', error);
+    return res.json({
+      message: 'An error occured while processing your request',
+      error: true,
+    });
+  }
+};
+
+export default { dashBoardInfo, pollsCreated, roomsJoined };
