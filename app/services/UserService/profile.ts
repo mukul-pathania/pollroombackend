@@ -176,10 +176,11 @@ const roomsJoined = async (
 
 type votes = Array<{
   id: string;
-  voteCreatedAt: Date;
+  voteUpdatedAt: Date;
   pollCreatedAt: Date;
   question: string;
   roomId: string;
+  roomName: string;
   optionText: string;
 }>;
 
@@ -189,20 +190,29 @@ const votesCast = async (
   try {
     const votes = await prisma.vote.findMany({
       where: { user_id: userId },
+      orderBy: { updated_at: 'desc' },
       select: {
         id: true,
-        created_at: true,
-        poll: { select: { room_id: true, question: true, created_at: true } },
+        updated_at: true,
+        poll: {
+          select: {
+            room_id: true,
+            question: true,
+            created_at: true,
+            room: { select: { name: true } },
+          },
+        },
         option: { select: { option_text: true } },
       },
     });
     const votesProcessed: votes = votes.map((vote) => ({
       id: vote.id,
-      voteCreatedAt: vote.created_at,
+      voteUpdatedAt: vote.updated_at,
       pollCreatedAt: vote.poll.created_at,
       question: vote.poll.question,
       roomId: vote.poll.room_id,
       optionText: vote.option.option_text,
+      roomName: vote.poll.room.name,
     }));
     return { message: 'Success', error: false, votes: votesProcessed };
   } catch (error) {
