@@ -70,4 +70,29 @@ const sendSignUpEmail = async (user: user): Promise<void> => {
   }
 };
 
-export default { sendSignUpEmail, sendPasswordResetEmail };
+const sendMessageEmail = async (
+  name: string,
+  email: string,
+  message: string,
+): Promise<{ message: string; error: boolean }> => {
+  try {
+    const HTML = `<p>${message}</p>`;
+    const msg = {
+      from: config.EMAIL_USER,
+      to: config.MY_EMAIL,
+      subject: `Message on PollRoom from ${name} ${email}`,
+      html: HTML,
+    };
+    const info = await sendgrid.send(msg);
+    logger.log('info', 'emailservice:sendmessageemail %O', info);
+    return { message: 'Mail sent successfully', error: false };
+  } catch (error) {
+    logger.log('error', 'emailservice:sendmessageemail %O', error);
+    return {
+      message: 'An error occured while processing your request',
+      error: true,
+    };
+  }
+};
+
+export default { sendSignUpEmail, sendPasswordResetEmail, sendMessageEmail };

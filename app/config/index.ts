@@ -15,4 +15,6 @@ export default {
   REFRESH_TOKEN_SECRET:
     process.env.REFRESH_TOKEN_SECRET || 'asdjfuioh809jh2yionaer89nvadsol',
   SENDGRID_API_KEY: process.env.SENDGRID_API_KEY as string,
+  MY_EMAIL: process.env.MY_EMAIL as string,
+  HCAPTCHA_SECRET_KEY: process.env.HCAPTCHA_SECRET_KEY as string,
 };
